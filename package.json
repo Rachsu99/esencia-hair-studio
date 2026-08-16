@@ -8,10 +8,14 @@
   "scripts": {
     "dev": "node scripts/build.mjs && node scripts/serve.mjs",
     "build": "node scripts/build.mjs",
+    "deploy": "wrangler deploy",
     "preview": "node scripts/build.mjs && node scripts/serve.mjs --dist",
     "start": "node scripts/serve.mjs --dist",
     "test": "npm run build && node --test tests/site.test.mjs",
     "lint": "node --check scripts/build.mjs && node --check scripts/serve.mjs && node --check js/main.js"
+  },
+  "devDependencies": {
+    "wrangler": "4.123.0"
   },
   "type": "module"
 }
