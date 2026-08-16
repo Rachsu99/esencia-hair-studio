@@ -47,8 +47,12 @@
         status.hidden = false;
         status.focus();
       }
+      const emailLink = form.querySelector('a[href^="mailto:"]');
+      const recipient = emailLink instanceof HTMLAnchorElement
+        ? emailLink.href.replace(/^mailto:/i, "").split("?")[0]
+        : "Rachsu99@gmail.com";
       window.location.href =
-        "mailto:Rachsu99@gmail.com?subject=" +
+        "mailto:" + recipient + "?subject=" +
         encodeURIComponent(subject) +
         "&body=" +
         encodeURIComponent(body);

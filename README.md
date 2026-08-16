@@ -1,105 +1,123 @@
 # Esencia Hair Studio
 
-Production-ready static website for Esencia Hair Studio.
+Production website and private content dashboard for Esencia Hair Studio.
 
-- Production domain: https://esenciahair.co.nz
-- Repository name: esencia-hair-studio
-- Architecture: static HTML, CSS and JavaScript
-- Package manager: npm
-- Build output: dist
+- Production: `https://esenciahair.co.nz`
+- Repository: `Rachsu99/esencia-hair-studio`
+- Runtime: Cloudflare Worker with Static Assets and D1
+- Build output: `dist`
+- Production branch: `main`
 
-The project intentionally has no database, serverless API or framework.
-Esencia is a marketing website deployed with Cloudflare Workers Static Assets.
+This repository is only for Esencia Hair Studio. Do not reuse its bindings,
+secrets, database or deployment settings in PTG Activewear or another project.
+
+## Architecture
+
+`scripts/build.mjs` creates the public HTML pages in the project root and in
+`dist`. Cloudflare publishes only `dist`. `worker/index.ts` serves those assets,
+applies approved D1 content to public HTML, hides disabled services, generates
+the sitemap and protects `/admin` plus `/api/admin/*`.
+
+The admin password is never stored in the repository or browser JavaScript.
+Only a PBKDF2-SHA256 password hash is configured as a Cloudflare secret. Admin
+sessions use random HttpOnly, Secure, SameSite=Strict cookies, expiring D1
+records, rotating CSRF tokens, same-origin checks and login throttling.
 
 ## Local development
 
-Install the project metadata:
+Use Node.js 22 or newer.
 
-    npm install
+```text
+npm clean-install
+npm run build
+npm run dev
+```
 
-Start the local website:
+`npm run dev` starts the complete Worker locally, including the private admin
+route and a local D1 database. `npm run dev:static` is available when only the
+generated public files need a quick preview.
 
-    npm run dev
+Before testing admin login locally, create `.dev.vars` (ignored by Git) from
+the names in `.env.example`. Create a password hash without showing the
+password on screen:
 
-The command refreshes the generated HTML files and prints the local preview
-address.
+```text
+npm run admin:hash
+```
 
-## Production build
+Set these three local values:
 
-Create the Cloudflare-ready build:
+```text
+ADMIN_USERNAME=your-private-username
+ADMIN_PASSWORD_HASH=the-complete-pbkdf2-value
+SESSION_SECRET=a-long-random-secret
+```
 
-    npm run build
+Never put real values in `.env.example`, `wrangler.jsonc`, source files, commit
+messages or screenshots.
 
-Preview the exact dist output locally:
+## Checks
 
-    npm run preview
+```text
+npm run lint
+npm test
+npx wrangler deploy --dry-run
+```
 
-Run the project checks:
-
-    npm run lint
-    npm test
-
-The build creates a fresh dist directory containing the HTML pages, optimized
-images, CSS, JavaScript, sitemap, robots file, custom 404 page and Cloudflare
-response headers.
+The tests rebuild the site, typecheck the Worker against generated Cloudflare
+types, verify links and assets, confirm the enquiry flow remains frontend-only,
+and check that admin routes and credential names do not leak into public HTML.
 
 ## Website content
 
-Confirmed contact details, the production domain, services, prices and FAQs are
-centralized in site.config.mjs. Running npm run build refreshes all root HTML
-pages and the dist output.
+Confirmed defaults are in `site.config.mjs`. The main email is
+`Rachsu99@gmail.com`, and the official Instagram account is
+`@hairbyrachel.nz`. The public enquiry form prepares a message in the visitor’s
+email application; it does not submit customer data to this Worker.
 
-The enquiry form prepares an email to Rachsu99@gmail.com in the visitor’s email
-application. No contact-form backend or email credentials are required.
+At runtime, approved service copy, prices, visibility, existing gallery items,
+contact details and homepage SEO can be edited at `/admin`. Nanoplasty remains
+hidden by default and is excluded from public navigation, content, direct
+routes and the generated sitemap until enabled by an authenticated admin.
 
-Editorial photography is clearly disclosed and is not presented as Esencia
-client work. Current client work is linked from Rachel’s official Instagram.
-Studio address, phone number and opening hours are intentionally omitted until
-approved for publication.
+The optional phone, address, hours and external booking link remain blank until
+real business details are approved. Existing gallery images can be edited or
+hidden; uploads require a separate, deliberately scoped R2 phase.
 
-## Git workflow
+## Cloudflare production setup
 
-The production branch is main. After creating an empty GitHub repository named
-esencia-hair-studio, add its remote using your real GitHub username:
+Use the Esencia Cloudflare account only. The current local shell may be signed
+into a different Cloudflare account; verify the account ID before every remote
+command. Do not create an Esencia database or Worker in another account.
 
-    git remote add origin https://github.com/YOUR_GITHUB_USERNAME/esencia-hair-studio.git
-    git add .
-    git commit -m "Initial Esencia Hair Studio deployment setup"
-    git push -u origin main
+The Git-connected production build uses:
 
-For future updates:
+```text
+Repository: Rachsu99/esencia-hair-studio
+Production branch: main
+Build command: npm run build
+Deploy command: npx wrangler deploy
+Root directory: repository root
+Assets directory: dist (from wrangler.jsonc)
+```
 
-    git add .
-    git commit -m "Describe the website update"
-    git push
+The D1 binding is declared as `ADMIN_DB`. Current Wrangler versions can
+provision the production D1 resource during a Git deployment when the binding
+does not yet have an ID. After the resource exists, preserve its generated ID
+and never point this project at another site’s database.
 
-Do not substitute an email address for YOUR_GITHUB_USERNAME.
+Create these encrypted Worker secrets in the correct Esencia account before
+the first admin-enabled deployment:
 
-## Cloudflare Workers deployment
+```text
+ADMIN_USERNAME
+ADMIN_PASSWORD_HASH
+SESSION_SECRET
+```
 
-Use these exact values:
+The account token used by Cloudflare Builds must be allowed to deploy this
+Worker and provision/use its D1 database. Git-connected builds use their own
+Cloudflare account token; a local Wrangler login does not replace it.
 
-    Repository: esencia-hair-studio
-    Framework preset: None
-    Production branch: main
-    Build command: npm run build
-    Deploy command: npx wrangler deploy
-    Static assets directory: dist (configured in wrangler.jsonc)
-    Root directory: / (repository root; leave the advanced field blank)
-    Environment variables: None required
-
-Dashboard steps:
-
-1. Open Cloudflare Dashboard.
-2. Go to Workers & Pages.
-3. Open the existing `esencia-hair-studio` Worker.
-4. Under Builds, connect the `Rachsu99/esencia-hair-studio` repository.
-5. Enter the settings above.
-6. Save and deploy, then test `esencia-hair-studio.rachsu99.workers.dev`.
-
-Wrangler publishes only the generated `dist` directory. Clean routes such as
-`/about` and the custom `404.html` behavior are configured in `wrangler.jsonc`.
-The production custom domain is `https://esenciahair.co.nz` and `www` redirects
-permanently to the apex domain.
-
-Every push to `main` triggers a new production Worker build and deployment.
+Every push to `main` can trigger production. Review `git diff`, run all checks,
+and confirm the active Cloudflare account before pushing.

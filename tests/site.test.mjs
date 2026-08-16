@@ -89,10 +89,26 @@ test("keeps the enquiry flow honest and accessible", async () => {
   assert.match(contact, /Prepare email enquiry/);
   assert.match(gallery, /<dialog class="lightbox"/);
   assert.match(gallery, /data-lightbox-close/);
-  assert.equal(existsSync(path.join(root, "nanoplasty.html")), false);
+  assert.equal(existsSync(path.join(root, "nanoplasty.html")), true);
   for (const page of [home, contact, gallery]) {
-    assert.doesNotMatch(page, /Nanoplasty|nanoplasty\.html/);
+    assert.match(page, /data-service="nanoplasty" hidden/);
+    for (const match of page.matchAll(/<[^>]+data-service="nanoplasty"[^>]*>/g)) {
+      assert.match(match[0], /data-service="nanoplasty"[^>]*hidden/);
+    }
   }
+});
+
+test("keeps private admin routes and credentials out of public markup", async () => {
+  const home = await readFile(path.join(root, "index.html"), "utf8");
+  const robots = await readFile(path.join(root, "robots.txt"), "utf8");
+  const wrangler = await readFile(path.join(root, "wrangler.jsonc"), "utf8");
+  assert.doesNotMatch(home, /\/admin|ADMIN_PASSWORD|SESSION_SECRET/);
+  assert.match(robots, /Disallow: \/admin/);
+  assert.match(robots, /Disallow: \/api\/admin\//);
+  assert.match(wrangler, /"directory": "\.\/dist"/);
+  assert.match(wrangler, /"ADMIN_PASSWORD_HASH"/);
+  assert.doesNotMatch(wrangler, /pbkdf2-sha256\$|Rachsu99@gmail\.com/);
+  assert.equal(existsSync(path.join(root, "dist", "assets", "images", "brand", "rachel-sticker.png")), false);
 });
 
 test("emits production domain metadata and Cloudflare deployment files", async () => {

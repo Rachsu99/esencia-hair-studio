@@ -7,12 +7,10 @@ const root = process.cwd();
 const productionUrl = (process.env.SITE_URL || site.url || "").replace(/\/$/, "");
 const year = new Date().getFullYear();
 const instagramLabel = site.instagramHandle;
-const hiddenServiceSlugs = new Set(["nanoplasty"]);
-const publicServices = services.filter((service) => !hiddenServiceSlugs.has(service.slug));
-const hiddenServices = services.filter((service) => hiddenServiceSlugs.has(service.slug));
-const publicTreatmentFaqs = treatmentFaqs.filter(([question]) => !question.toLowerCase().includes("nanoplasty"));
 const publicGalleryImages = galleryImages.filter(([, , , , category]) => category !== "Nanoplasty");
 const publicPricingNote = "Keratin prices are based on hair length, thickness and the amount of product required. Final pricing will be confirmed following consultation.";
+const serviceAttributes = (service) => ' data-service="' + service.slug + '"' + (service.visible === false ? " hidden" : "");
+const contentAttribute = (key) => ' data-content="' + key + '"';
 const cssVersion = createHash("sha256")
   .update(await readFile(path.join(root, "css", "style.css")))
   .digest("hex")
@@ -32,6 +30,7 @@ const navItems = [
   ["Home", "index.html", "home"],
   ["Services", "services.html", "services"],
   ["Keratin", "keratin.html", "keratin"],
+  ["Nanoplasty", "nanoplasty.html", "nanoplasty"],
   ["Gallery", "gallery.html", "gallery"],
   ["About", "about.html", "about"],
   ["Contact", "contact.html", "contact"],
@@ -49,7 +48,8 @@ function navigation(active, mobile = false) {
   const links = navItems
     .map(([label, href, key]) => {
       const current = active === key ? ' aria-current="page"' : "";
-      return '<a href="' + href + '"' + current + ">" + label + "</a>";
+      const service = services.find((item) => item.slug === key);
+      return '<a href="' + href + '"' + current + (service ? serviceAttributes(service) : "") + ">" + label + "</a>";
     })
     .join("");
   return (
@@ -82,10 +82,10 @@ function footer() {
   return [
     '<footer class="footer">',
     '<div class="shell footer__grid">',
-    '<div class="footer__brand">' + brandMark() + '<p>Personalised haircuts and smoothing treatments, delivered with care and a refined, wearable finish.</p><a class="text-link" href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">Follow ' + instagramLabel + " ↗</a></div>",
+    '<div class="footer__brand">' + brandMark() + '<p>Personalised haircuts and smoothing treatments, delivered with care and a refined, wearable finish.</p><a class="text-link" href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">Follow <span data-contact="instagram">' + instagramLabel + " ↗</span></a></div>",
     '<div><p class="footer__heading">Explore</p><a href="index.html">Home</a><a href="services.html">Services</a><a href="gallery.html">Gallery</a><a href="about.html">About</a></div>',
-    '<div><p class="footer__heading">Services</p><a href="haircuts.html">Ladies haircuts</a><a href="keratin.html">Keratin smoothing</a></div>',
-    '<div><p class="footer__heading">Contact</p><a href="mailto:' + site.email + '">' + site.email + '</a><a href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">' + instagramLabel + ' ↗</a><p>Location and opening hours are confirmed with your appointment.</p><a class="button button--light button--small" href="book.html">Request appointment</a></div>',
+    '<div><p class="footer__heading">Services</p>' + services.map((service) => '<a href="' + service.file + '"' + serviceAttributes(service) + contentAttribute("services." + service.slug + ".name") + '>' + service.name + '</a>').join("") + '</div>',
+    '<div><p class="footer__heading">Contact</p><a href="mailto:' + site.email + '" data-contact="email">' + site.email + '</a><a href="' + site.instagram + '" target="_blank" rel="noopener noreferrer" data-contact="instagram">' + instagramLabel + ' ↗</a><p data-contact-field="phone" hidden></p><p data-contact-field="address" hidden></p><p data-contact-field="openingHours" hidden></p><p>Location and opening hours are confirmed with your appointment.</p><a class="button button--light button--small" href="book.html">Request appointment</a></div>',
     "</div>",
     '<div class="shell footer__bottom"><span>© <span data-year>' + year + "</span> Esencia Hair Studio. All rights reserved.</span><span>Appointments are arranged directly with Rachel.</span></div>",
     "</footer>",
@@ -164,11 +164,11 @@ function sectionHeading(eyebrow, title, copy = "", align = "") {
   ].join("");
 }
 
-function pageHero(eyebrow, title, copy, image, width, height, alt, dark = false) {
+function pageHero(eyebrow, title, copy, image, width, height, alt, dark = false, contentPrefix = "") {
   return [
     '<section class="page-hero' + (dark ? " page-hero--dark" : "") + '">',
     '<div class="shell page-hero__inner">',
-    '<div><p class="eyebrow">' + eyebrow + "</p><h1>" + title + '</h1><p>' + copy + '</p><div class="button-row"><a class="button" href="book.html">Request appointment</a><a class="text-link" href="services.html">View all services →</a></div></div>',
+    '<div><p class="eyebrow"' + (contentPrefix ? contentAttribute(contentPrefix + ".category") : "") + '>' + eyebrow + "</p><h1" + (contentPrefix ? contentAttribute(contentPrefix + ".name") : "") + ">" + title + '</h1><p' + (contentPrefix ? contentAttribute(contentPrefix + ".description") : "") + '>' + copy + '</p><div class="button-row"><a class="button" href="book.html">Request appointment</a><a class="text-link" href="services.html">View all services →</a></div></div>',
     '<figure class="page-hero__image"><img src="' + image + '" width="' + width + '" height="' + height + '" alt="' + alt + '" fetchpriority="high"></figure>',
     "</div>",
     "</section>",
@@ -177,11 +177,11 @@ function pageHero(eyebrow, title, copy, image, width, height, alt, dark = false)
 
 function serviceCards() {
   return (
-    '<div class="service-grid service-grid--limited">' +
-    publicServices
+    '<div class="service-grid">' +
+    services
       .map(
         (service, index) =>
-          '<article class="service-card"><a class="service-card__image" href="' +
+          '<article class="service-card"' + serviceAttributes(service) + '><a class="service-card__image" href="' +
           service.file +
           '"><img src="' +
           service.image +
@@ -196,12 +196,12 @@ function serviceCards() {
           '"><span>0' +
           (index + 1) +
           '</span></a><div class="service-card__body"><p class="eyebrow">' +
-          service.eyebrow +
-          "</p><h3>" +
+          '<span' + contentAttribute("services." + service.slug + ".category") + '>' + service.eyebrow +
+          "</span></p><h3" + contentAttribute("services." + service.slug + ".name") + ">" +
           service.name +
-          "</h3><p>" +
+          "</h3><p" + contentAttribute("services." + service.slug + ".summary") + ">" +
           service.summary +
-          '</p><div class="service-card__footer"><strong>' +
+          '</p><div class="service-card__footer"><strong' + contentAttribute("services." + service.slug + ".startingPrice") + '>' +
           service.startingPrice +
           '</strong><a class="text-link" href="' +
           service.file +
@@ -240,13 +240,16 @@ function comparison() {
   ].join("");
 }
 
-function faq(items = publicTreatmentFaqs) {
+function faq(items = treatmentFaqs) {
   return (
     '<div class="faq-list">' +
     items
       .map(
-        ([question, answer]) =>
-          '<details><summary><span>' + question + '</span><span aria-hidden="true">+</span></summary><p>' + answer + "</p></details>"
+        ([question, answer]) => {
+          const isNanoplasty = question.toLowerCase().includes("nanoplasty");
+          const nanoService = services.find((service) => service.slug === "nanoplasty");
+          return '<details' + (isNanoplasty && nanoService ? serviceAttributes(nanoService) : "") + '><summary><span>' + question + '</span><span aria-hidden="true">+</span></summary><p>' + answer + "</p></details>";
+        }
       )
       .join("") +
     "</div>"
@@ -256,23 +259,23 @@ function faq(items = publicTreatmentFaqs) {
 function cta(title = "Ready for hair that feels more like you?", copy = "Start with a conversation. Rachel will help you choose the service that suits your hair, your routine and the result you want.") {
   return [
     '<section class="cta-section">',
-    '<div class="shell cta-section__inner"><p class="eyebrow">Your next appointment</p><h2>' + title + '</h2><p>' + copy + '</p><div class="button-row button-row--center"><a class="button button--light" href="book.html">Request appointment</a><a class="text-link text-link--light" href="mailto:' + site.email + '">Email ' + site.email + " →</a></div></div>",
+    '<div class="shell cta-section__inner"><p class="eyebrow">Your next appointment</p><h2>' + title + '</h2><p>' + copy + '</p><div class="button-row button-row--center"><a class="button button--light" href="book.html">Request appointment</a><a class="text-link text-link--light" href="mailto:' + site.email + '">Email <span data-contact="email">' + site.email + "</span> →</a></div></div>",
     "</section>",
   ].join("");
 }
 
 function allPrices() {
   return (
-    '<div class="all-prices all-prices--limited">' +
-    publicServices
+    '<div class="all-prices">' +
+    services
       .map(
         (service) =>
-          '<article><p class="eyebrow">' +
+          '<article' + serviceAttributes(service) + '><p class="eyebrow"' + contentAttribute("services." + service.slug + ".category") + '>' +
           service.eyebrow +
-          "</p><h3>" +
+          "</p><h3" + contentAttribute("services." + service.slug + ".name") + ">" +
           service.name +
           "</h3>" +
-          service.prices.map(([label, price]) => "<div><span>" + label + "</span><strong>" + price + "</strong></div>").join("") +
+          service.prices.map(([label, price], index) => "<div><span" + contentAttribute("services." + service.slug + ".prices." + index + ".label") + ">" + label + "</span><strong" + contentAttribute("services." + service.slug + ".prices." + index + ".price") + ">" + price + "</strong></div>").join("") +
           '<a class="text-link" href="' +
           service.file +
           '">Service details →</a></article>'
@@ -285,17 +288,17 @@ function allPrices() {
 function contactForm() {
   return [
     '<form class="contact-form" id="enquiry" data-enquiry-form>',
-    '<div class="form-intro"><p class="eyebrow">Appointment enquiry</p><h2>Tell Rachel about your hair</h2><p>Complete the details below and we will prepare an email to ' + site.email + ' in your email app. Nothing is submitted to a server from this website.</p></div>',
+    '<div class="form-intro"><p class="eyebrow">Appointment enquiry</p><h2>Tell Rachel about your hair</h2><p>Complete the details below and we will prepare an email to <span data-contact="email">' + site.email + '</span> in your email app. Nothing is submitted to a server from this website.</p></div>',
     '<div class="form-grid">',
     '<label>Full name<input name="name" autocomplete="name" required></label>',
     '<label>Phone<input name="phone" type="tel" autocomplete="tel" required></label>',
     '<label>Email<input name="email" type="email" autocomplete="email" required></label>',
-    '<label>Service interested in<select name="service" required><option value="" selected disabled>Select a service</option><option>Ladies Haircut</option><option>Shampoo, Treatment &amp; Haircut</option><option>Keratin Smoothing</option><option>Consultation</option><option>Other</option></select></label>',
+    '<label>Service interested in<select name="service" required><option value="" selected disabled>Select a service</option><option>Ladies Haircut</option><option>Shampoo, Treatment &amp; Haircut</option><option>Keratin Smoothing</option><option' + serviceAttributes(services.find((service) => service.slug === "nanoplasty")) + '>Nanoplasty</option><option>Consultation</option><option>Other</option></select></label>',
     '<label>Hair length<select name="hairLength" required><option value="" selected disabled>Select hair length</option><option>Short</option><option>Medium</option><option>Long</option><option>Extra long / thick</option><option>Not sure</option></select></label>',
     '<label>Preferred date<input name="date" type="date" data-date-input></label>',
     '<label class="form-grid__full">Message<textarea name="message" rows="5" placeholder="What would you like help with?" required></textarea></label>',
     "</div>",
-    '<div class="form-actions"><button class="button" type="submit">Prepare email enquiry</button><span>Or email <a href="mailto:' + site.email + '">' + site.email + "</a></span></div>",
+    '<div class="form-actions"><button class="button" type="submit">Prepare email enquiry</button><span>Or email <a href="mailto:' + site.email + '" data-contact="email">' + site.email + "</a></span></div>",
     '<div class="form-success" role="status" tabindex="-1" data-form-status hidden><strong>Your enquiry is ready.</strong><p>Your email application should open with the details filled in. Review the message, then press send.</p></div>',
     "</form>",
   ].join("");
@@ -321,6 +324,7 @@ function homePage() {
     '</div><div class="marquee" aria-hidden="true"><span>Thoughtful consultations</span><i>✦</i><span>Beautifully wearable results</span><i>✦</i><span>A warm, refined experience</span></div></section>',
     '<section class="story-section"><div class="shell story-grid"><figure class="story-image"><img src="assets/images/editorial/consultation.webp" width="1400" height="934" alt="A personal hair consultation in a bright salon" loading="lazy"><figcaption>Personal from the first conversation.</figcaption></figure><div class="story-copy"><p class="eyebrow">Welcome to Esencia</p><h2>Your hair, understood.</h2><p>A personalised hair experience focused on beautiful results, healthy-looking hair and styles designed around you.</p><p>Whether you are refreshing your shape or exploring a smoothing treatment, each appointment is approached with warmth, honesty and attention to detail.</p><a class="text-link" href="about.html">Discover the studio →</a></div></div></section>',
     '<section class="section shell">' + sectionHeading("Services", "Carefully chosen. Beautifully finished.", "Two considered services, each beginning with a conversation about your hair and the result you want.") + serviceCards() + pricingNoteBlock() + "</section>",
+    '<section class="section section--soft"' + serviceAttributes(services.find((service) => service.slug === "nanoplasty")) + '><div class="shell">' + sectionHeading("Treatment guide", "Keratin or Nanoplasty?", "Two distinct smoothing services, compared simply. Your consultation is where the right choice becomes clear.") + comparison() + "</div></section>",
     '<section class="results-section"><div class="shell results-grid"><div class="results-copy"><p class="eyebrow">Current work</p><h2>Transformations, without the guesswork.</h2><p>Visit Rachel’s official Instagram for current Esencia cuts, smoothing services and transformations.</p><a class="button button--outline" href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">See current results ↗</a></div>' + resultsPanel() + "</div></section>",
     '<section class="instagram-section"><div class="shell"><div class="instagram-heading">' + sectionHeading("From the studio", "Follow our transformations.", "Follow Rachel’s official account for current Esencia work, appointment updates and studio inspiration.") + '<a class="button" href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">Follow on Instagram ↗</a></div><div class="instagram-grid">' + instagramTiles + "</div></div></section>",
     '<section class="section shell faq-section">' + sectionHeading("Good to know", "Before you book") + faq() + "</section>",
@@ -332,6 +336,7 @@ function servicesPage() {
   return [
     pageHero("Services & pricing", "Beautifully tailored to you.", "Considered cuts and smoothing services, with clear starting prices and a consultation-led approach.", "assets/images/editorial/long-hair.webp", 1400, 2100, "Long softly styled brown hair"),
     '<section class="section shell">' + sectionHeading("The menu", "Services and starting prices.", "Choose a service to see the full experience, benefits and pricing guide.") + allPrices() + pricingNoteBlock() + "</section>",
+    '<section class="section section--soft"' + serviceAttributes(services.find((service) => service.slug === "nanoplasty")) + '><div class="shell">' + sectionHeading("Compare treatments", "Smoothing, made simpler.") + comparison() + "</div></section>",
     cta(),
   ].join("\n");
 }
@@ -344,12 +349,12 @@ function servicePage(service) {
         ["Can I add a treatment?", "Yes. The Shampoo, Treatment & Haircut service is available from $95."],
         ["How should I prepare?", "Bring reference images if helpful and tell Rachel how you usually wear and style your hair."],
       ]
-    : publicTreatmentFaqs;
+    : treatmentFaqs;
 
   return [
-    pageHero(service.eyebrow, service.name, service.intro, service.image, service.width, service.height, service.alt, true),
-    '<section class="section shell service-intro"><div>' + sectionHeading("Who it may suit", isCut ? "A shape made for real life." : "A smoother way to wear your hair.", service.suit) + "<p>" + service.summary + '</p></div><ul class="benefit-list">' + service.benefits.map((benefit, index) => "<li><span>0" + (index + 1) + "</span>" + benefit + "</li>").join("") + "</ul></section>",
-    '<section class="section section--soft"><div class="shell price-layout"><div>' + sectionHeading("Pricing", "A clear starting point.") + (isCut ? '<p class="section-heading__copy">Choose a tailored haircut or add a shampoo and conditioning treatment.</p>' : pricingNoteBlock()) + '</div><div class="price-guide">' + service.prices.map(([label, price], index) => '<div class="price-row"><span class="price-row__number">0' + (index + 1) + "</span><span>" + label + "</span><strong>" + price + "</strong></div>").join("") + "</div></div></section>",
+    pageHero(service.eyebrow, service.name, service.intro, service.image, service.width, service.height, service.alt, true, "services." + service.slug),
+    '<section class="section shell service-intro"><div>' + sectionHeading("Who it may suit", isCut ? "A shape made for real life." : "A smoother way to wear your hair.", service.suit) + "<p" + contentAttribute("services." + service.slug + ".summary") + ">" + service.summary + '</p></div><ul class="benefit-list">' + service.benefits.map((benefit, index) => "<li><span>0" + (index + 1) + "</span>" + benefit + "</li>").join("") + "</ul></section>",
+    '<section class="section section--soft"><div class="shell price-layout"><div>' + sectionHeading("Pricing", "A clear starting point.") + (isCut ? '<p class="section-heading__copy">Choose a tailored haircut or add a shampoo and conditioning treatment.</p>' : pricingNoteBlock()) + '</div><div class="price-guide">' + service.prices.map(([label, price], index) => '<div class="price-row"><span class="price-row__number">0' + (index + 1) + "</span><span" + contentAttribute("services." + service.slug + ".prices." + index + ".label") + ">" + label + "</span><strong" + contentAttribute("services." + service.slug + ".prices." + index + ".price") + ">" + price + "</strong></div>").join("") + "</div></div></section>",
     '<section class="section shell">' + sectionHeading("Your appointment", "A thoughtful process, from hello to finish.") + '<div class="process-grid">' + [
       ["01", "Consult", "We start with your hair, routine and desired result."],
       ["02", "Assess", "Rachel considers condition, length, thickness and suitability."],
@@ -363,10 +368,12 @@ function servicePage(service) {
 }
 
 function galleryPage() {
-  const tiles = publicGalleryImages
+  const tiles = galleryImages
     .map(
-      ([image, width, height, alt, category], index) =>
-        '<button class="gallery-tile gallery-tile--' + (index + 1) + '" type="button" data-gallery-image="' + image + '" data-gallery-alt="' + alt + '" data-gallery-caption="' + category + ' · Editorial image"><img src="' + image + '" width="' + width + '" height="' + height + '" alt="' + alt + '" loading="lazy"><span><small>' + category + "</small><b>View</b></span></button>"
+      ([image, width, height, alt, category], index) => {
+        const nanoService = category === "Nanoplasty" ? services.find((service) => service.slug === "nanoplasty") : null;
+        return '<button class="gallery-tile gallery-tile--' + (index + 1) + '" type="button" data-gallery-id="' + index + '"' + (nanoService ? serviceAttributes(nanoService) : "") + ' data-gallery-image="' + image + '" data-gallery-alt="' + alt + '" data-gallery-caption="' + category + ' · Editorial image"><img src="' + image + '" width="' + width + '" height="' + height + '" alt="' + alt + '" loading="lazy"><span><small>' + category + "</small><b>View</b></span></button>";
+      }
     )
     .join("");
   return [
@@ -396,7 +403,7 @@ function contactPage(isBooking = false) {
     '<section class="' + (isBooking ? "simple-hero shell" : "contact-hero") + '">' +
       (isBooking
         ? '<p class="eyebrow">Book an appointment</p><h1>Let’s begin with your hair.</h1><p>Share a little about what you are considering and Rachel will help you choose the right appointment.</p>'
-        : '<div class="shell contact-hero__grid"><div><p class="eyebrow">Contact & book</p><h1>Let’s talk about your hair.</h1><p>Tell Rachel what you are considering and she’ll help you choose the right appointment.</p></div><div class="contact-details"><div><span>01</span><small>Email</small><a href="mailto:' + site.email + '">' + site.email + '</a></div><div><span>02</span><small>Instagram</small><a href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">' + instagramLabel + ' ↗</a></div><div><span>03</span><small>Studio details</small><p>Location and opening hours are confirmed directly with your appointment.</p></div></div></div>') +
+        : '<div class="shell contact-hero__grid"><div><p class="eyebrow">Contact & book</p><h1>Let’s talk about your hair.</h1><p>Tell Rachel what you are considering and she’ll help you choose the right appointment.</p></div><div class="contact-details"><div><span>01</span><small>Email</small><a href="mailto:' + site.email + '" data-contact="email">' + site.email + '</a></div><div><span>02</span><small>Instagram</small><a href="' + site.instagram + '" target="_blank" rel="noopener noreferrer" data-contact="instagram">' + instagramLabel + ' ↗</a></div><div><span>03</span><small>Studio details</small><p data-contact-field="phone" hidden></p><p data-contact-field="address" hidden></p><p data-contact-field="openingHours" hidden></p><p>Location and opening hours are confirmed directly with your appointment.</p></div></div></div>') +
       "</section>",
     '<section class="section shell">' + contactForm() + "</section>",
   ].join("\n");
@@ -405,7 +412,7 @@ function contactPage(isBooking = false) {
 const pages = [
   ["index.html", "home", "Esencia Hair Studio | Premium Haircuts & Smoothing", "Personalised ladies haircuts and Keratin smoothing in a warm, refined studio experience.", homePage()],
   ["services.html", "services", "Services & Pricing | Esencia Hair Studio", "Explore personalised ladies haircuts and Keratin smoothing services and pricing at Esencia Hair Studio.", servicesPage()],
-  ...publicServices.map((service) => [service.file, service.slug, service.name + " | Esencia Hair Studio", "Explore " + service.name + " benefits, pricing and the consultation-led experience at Esencia Hair Studio.", servicePage(service), service.image]),
+  ...services.map((service) => [service.file, service.slug, service.name + " | Esencia Hair Studio", "Explore " + service.name + " benefits, pricing and the consultation-led experience at Esencia Hair Studio.", servicePage(service), service.image]),
   ["gallery.html", "gallery", "Gallery | Esencia Hair Studio", "Explore the Esencia Hair Studio aesthetic and visit Rachel’s official Instagram account for current client work.", galleryPage()],
   ["about.html", "about", "About | Esencia Hair Studio", "Meet Rachel and discover the warm, personalised philosophy behind Esencia Hair Studio.", aboutPage()],
   ["contact.html", "contact", "Contact & Book | Esencia Hair Studio", "Contact Esencia Hair Studio or prepare an appointment enquiry for Rachel.", contactPage(false)],
@@ -414,9 +421,6 @@ const pages = [
 
 await rm(path.join(root, "dist"), { recursive: true, force: true });
 await mkdir(path.join(root, "dist"), { recursive: true });
-for (const service of hiddenServices) {
-  await rm(path.join(root, service.file), { force: true });
-}
 
 for (const [file, active, title, description, content, socialImage] of pages) {
   const output = layout({ file, active, title, description, content, socialImage });
@@ -440,6 +444,15 @@ await writeFile(path.join(root, "dist", "404.html"), notFound, "utf8");
 for (const directory of ["assets", "css", "js"]) {
   await cp(path.join(root, directory), path.join(root, "dist", directory), { recursive: true });
 }
+for (const legacyImage of [
+  "rachel-portrait-560.webp",
+  "rachel-portrait.webp",
+  "rachel-sticker-560.webp",
+  "rachel-sticker.png",
+  "rachel-sticker.webp",
+]) {
+  await rm(path.join(root, "dist", "assets", "images", "brand", legacyImage), { force: true });
+}
 await cp(path.join(root, "robots.txt"), path.join(root, "dist", "robots.txt"));
 await cp(path.join(root, "_headers"), path.join(root, "dist", "_headers"));
 
@@ -461,6 +474,7 @@ for (const [file] of pages) {
 
 if (productionUrl) {
   const sitemap = pages
+    .filter(([file]) => !services.some((service) => service.file === file && service.visible === false))
     .map(([file]) => "  <url><loc>" + productionUrl + routeFor(file) + "</loc></url>")
     .join("\n");
   const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + sitemap + "\n</urlset>\n";

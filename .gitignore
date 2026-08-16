@@ -5,6 +5,7 @@ dist/
 # Local environment and deployment state
 .env*
 !.env.example
+.dev.vars*
 .wrangler/
 
 # Operating-system and log files

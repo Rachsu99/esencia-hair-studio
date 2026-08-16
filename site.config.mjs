@@ -14,6 +14,7 @@ export const pricingNote =
 export const services = [
   {
     slug: "haircuts",
+    visible: true,
     file: "haircuts.html",
     name: "Ladies Haircuts",
     eyebrow: "Shape · movement · ease",
@@ -33,6 +34,7 @@ export const services = [
   },
   {
     slug: "keratin",
+    visible: true,
     file: "keratin.html",
     name: "Keratin Smoothing",
     eyebrow: "Soft · smooth · polished",
@@ -54,6 +56,7 @@ export const services = [
   },
   {
     slug: "nanoplasty",
+    visible: false,
     file: "nanoplasty.html",
     name: "Nanoplasty",
     eyebrow: "Sleek · glossy · refined",
