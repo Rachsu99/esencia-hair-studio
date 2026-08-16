@@ -140,12 +140,6 @@ em { font-weight: 400; color: var(--rose); }
 .result-placeholder > div span { position: absolute; left: 18px; top: 18px; padding: 7px 12px; background: rgba(250,247,243,.9); font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; }
 .result-placeholder > p { position: absolute; z-index: 2; left: 50%; bottom: 20px; width: max-content; max-width: 86%; margin: 0; padding: 10px 16px; background: rgba(250,247,243,.92); font-size: .66rem; letter-spacing: .11em; text-transform: uppercase; transform: translateX(-50%); }
 .result-placeholder--wide { min-height: 440px; }
-.testimonial-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-.testimonial-placeholder { min-height: 300px; padding: 30px; display: flex; flex-direction: column; justify-content: flex-end; border: 1px solid var(--line); }
-.testimonial-placeholder > span { margin-bottom: auto; color: var(--rose); font-family: var(--serif); font-size: 3rem; }
-.testimonial-placeholder > p { margin-bottom: 10px; color: var(--taupe); font-size: .64rem; letter-spacing: .15em; text-transform: uppercase; }
-.testimonial-placeholder h3 { margin-bottom: 14px; }
-.testimonial-placeholder small { color: var(--taupe); }
 
 .instagram-section { padding-block: clamp(90px, 11vw, 160px); background: #f1dfda; }
 .instagram-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; }
@@ -347,7 +341,7 @@ em { font-weight: 400; color: var(--rose); }
   .hero-stamp { right: auto; left: 6%; top: 6%; width: 104px; height: 104px; }
   .marquee { justify-content: flex-start; width: max-content; padding-inline: 18px; }
   .section-heading { margin-bottom: 42px; }
-  .service-grid, .all-prices, .testimonial-grid, .values-grid { grid-template-columns: 1fr; }
+  .service-grid, .all-prices, .values-grid { grid-template-columns: 1fr; }
   .service-card__image { height: min(115vw, 520px); }
   .service-card__footer { display: flex; }
   .pricing-note { grid-template-columns: 1fr; gap: 12px; padding: 22px; }

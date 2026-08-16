@@ -32,6 +32,10 @@ test("builds a complete static multi-page website", async () => {
     assert.match(html, /css\/style\.css/);
     assert.match(html, /js\/main\.js/);
     assert.doesNotMatch(html, /localhost|127\.0\.0\.1/);
+    assert.doesNotMatch(html, /local website preview|from this local website/i);
+    for (const link of html.matchAll(/<a[^>]*target="_blank"[^>]*>/g)) {
+      assert.match(link[0], /rel="noopener noreferrer"/);
+    }
   }
 });
 
@@ -71,7 +75,7 @@ test("has no broken local page or asset references", async () => {
   }
 });
 
-test("keeps the local enquiry flow honest and accessible", async () => {
+test("keeps the enquiry flow honest and accessible", async () => {
   const contact = await readFile(path.join(root, "contact.html"), "utf8");
   const gallery = await readFile(path.join(root, "gallery.html"), "utf8");
   assert.match(contact, /Nothing is submitted to a server/);
@@ -82,7 +86,7 @@ test("keeps the local enquiry flow honest and accessible", async () => {
   assert.match(gallery, /data-lightbox-close/);
 });
 
-test("emits production domain metadata and Cloudflare Pages files", async () => {
+test("emits production domain metadata and Cloudflare deployment files", async () => {
   const home = await readFile(path.join(root, "index.html"), "utf8");
   const keratin = await readFile(path.join(root, "keratin.html"), "utf8");
   const notFound = await readFile(path.join(root, "404.html"), "utf8");

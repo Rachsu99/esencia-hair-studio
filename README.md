@@ -8,9 +8,8 @@ Production-ready static website for Esencia Hair Studio.
 - Package manager: npm
 - Build output: dist
 
-The project intentionally has no database, Worker, serverless API or framework.
-Esencia is a marketing website and uses a simple Cloudflare Pages static
-deployment path.
+The project intentionally has no database, serverless API or framework.
+Esencia is a marketing website deployed with Cloudflare Workers Static Assets.
 
 ## Local development
 
@@ -42,7 +41,7 @@ Run the project checks:
 
 The build creates a fresh dist directory containing the HTML pages, optimized
 images, CSS, JavaScript, sitemap, robots file, custom 404 page and Cloudflare
-Pages response headers.
+response headers.
 
 ## Website content
 
@@ -53,9 +52,10 @@ pages and the dist output.
 The enquiry form prepares an email to Rachsu99@gmail.com in the visitor’s email
 application. No contact-form backend or email credentials are required.
 
-Before public launch, replace the clearly labelled editorial photography and
-placeholders with approved Esencia client work, reviews, Rachel’s biography,
-studio address, phone number and opening hours.
+Editorial photography is clearly disclosed and is not presented as Esencia
+client work. Current client work is linked from Rachel’s official Instagram.
+Studio address, phone number and opening hours are intentionally omitted until
+approved for publication.
 
 ## Git workflow
 
@@ -75,7 +75,7 @@ For future updates:
 
 Do not substitute an email address for YOUR_GITHUB_USERNAME.
 
-## Cloudflare Pages deployment
+## Cloudflare Workers deployment
 
 Use these exact values:
 
@@ -83,7 +83,8 @@ Use these exact values:
     Framework preset: None
     Production branch: main
     Build command: npm run build
-    Build output directory: dist
+    Deploy command: npx wrangler deploy
+    Static assets directory: dist (configured in wrangler.jsonc)
     Root directory: / (repository root; leave the advanced field blank)
     Environment variables: None required
 
@@ -91,21 +92,14 @@ Dashboard steps:
 
 1. Open Cloudflare Dashboard.
 2. Go to Workers & Pages.
-3. Select Create application, then Pages.
-4. Select Import an existing Git repository.
-5. Connect GitHub and choose esencia-hair-studio.
-6. Enter the settings above.
-7. Select Save and Deploy.
-8. Test the generated esencia-hair-studio.pages.dev address.
+3. Open the existing `esencia-hair-studio` Worker.
+4. Under Builds, connect the `Rachsu99/esencia-hair-studio` repository.
+5. Enter the settings above.
+6. Save and deploy, then test `esencia-hair-studio.rachsu99.workers.dev`.
 
-Cloudflare Pages automatically serves files such as about.html at the clean
-/about route and redirects /about.html to /about. The included 404.html handles
-unknown routes.
+Wrangler publishes only the generated `dist` directory. Clean routes such as
+`/about` and the custom `404.html` behavior are configured in `wrangler.jsonc`.
+The production custom domain is `https://esenciahair.co.nz` and `www` redirects
+permanently to the apex domain.
 
-After the pages.dev version is approved, connect esenciahair.co.nz in the
-Cloudflare project’s Custom domains section. The project already generates
-canonical metadata and a sitemap for that domain, but this repository does not
-change DNS or connect the domain itself.
-
-Every push to main will trigger a new production build after the GitHub
-repository is connected to Cloudflare Pages.
+Every push to `main` triggers a new production Worker build and deployment.

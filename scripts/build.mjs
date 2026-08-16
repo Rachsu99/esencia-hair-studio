@@ -72,12 +72,12 @@ function footer() {
   return [
     '<footer class="footer">',
     '<div class="shell footer__grid">',
-    '<div class="footer__brand">' + brandMark() + '<p>Personalised haircuts and smoothing treatments, delivered with care and a refined, wearable finish.</p><a class="text-link" href="' + site.instagram + '" target="_blank" rel="noreferrer">Follow ' + instagramLabel + " ↗</a></div>",
+    '<div class="footer__brand">' + brandMark() + '<p>Personalised haircuts and smoothing treatments, delivered with care and a refined, wearable finish.</p><a class="text-link" href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">Follow ' + instagramLabel + " ↗</a></div>",
     '<div><p class="footer__heading">Explore</p><a href="index.html">Home</a><a href="services.html">Services</a><a href="gallery.html">Gallery</a><a href="about.html">About</a></div>',
     '<div><p class="footer__heading">Services</p><a href="haircuts.html">Ladies haircuts</a><a href="keratin.html">Keratin smoothing</a><a href="nanoplasty.html">Nanoplasty</a></div>',
-    '<div><p class="footer__heading">Contact</p><a href="mailto:' + site.email + '">' + site.email + '</a><a href="' + site.instagram + '" target="_blank" rel="noreferrer">' + instagramLabel + ' ↗</a><p>Location and opening hours are confirmed with your appointment.</p><a class="button button--light button--small" href="book.html">Request appointment</a></div>',
+    '<div><p class="footer__heading">Contact</p><a href="mailto:' + site.email + '">' + site.email + '</a><a href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">' + instagramLabel + ' ↗</a><p>Location and opening hours are confirmed with your appointment.</p><a class="button button--light button--small" href="book.html">Request appointment</a></div>',
     "</div>",
-    '<div class="shell footer__bottom"><span>© <span data-year>' + year + "</span> Esencia Hair Studio. All rights reserved.</span><span>Local website preview · Final studio details and policies will be added before launch.</span></div>",
+    '<div class="shell footer__bottom"><span>© <span data-year>' + year + "</span> Esencia Hair Studio. All rights reserved.</span><span>Appointments are arranged directly with Rachel.</span></div>",
     "</footer>",
     '<a class="mobile-cta" href="book.html">Book appointment</a>',
   ].join("\n");
@@ -275,7 +275,7 @@ function allPrices() {
 function contactForm() {
   return [
     '<form class="contact-form" id="enquiry" data-enquiry-form>',
-    '<div class="form-intro"><p class="eyebrow">Appointment enquiry</p><h2>Tell Rachel about your hair</h2><p>Complete the details below and we will prepare an email to ' + site.email + ' in your email app. Nothing is submitted to a server from this local website.</p></div>',
+    '<div class="form-intro"><p class="eyebrow">Appointment enquiry</p><h2>Tell Rachel about your hair</h2><p>Complete the details below and we will prepare an email to ' + site.email + ' in your email app. Nothing is submitted to a server from this website.</p></div>',
     '<div class="form-grid">',
     '<label>Full name<input name="name" autocomplete="name" required></label>',
     '<label>Phone<input name="phone" type="tel" autocomplete="tel" required></label>',
@@ -291,8 +291,8 @@ function contactForm() {
   ].join("");
 }
 
-function resultsPlaceholder(wide = false) {
-  return '<div class="result-placeholder' + (wide ? " result-placeholder--wide" : "") + '" aria-label="Reserved space for verified Esencia before and after photography"><div><span>Before</span></div><div><span>After</span></div><p>Approved, unedited Esencia results will be added here</p></div>';
+function resultsPanel(wide = false) {
+  return '<div class="result-placeholder' + (wide ? " result-placeholder--wide" : "") + '" aria-label="Esencia Hair Studio brand artwork"><div><span>Shape</span></div><div><span>Shine</span></div><p>See current Esencia work on Instagram</p></div>';
 }
 
 function homePage() {
@@ -300,7 +300,7 @@ function homePage() {
     .slice(0, 4)
     .map(
       ([image, width, height, alt]) =>
-        '<a href="' + site.instagram + '" target="_blank" rel="noreferrer"><img src="' + image + '" width="' + width + '" height="' + height + '" alt="' + alt + '" loading="lazy"><span>' + instagramLabel + "</span></a>"
+        '<a href="' + site.instagram + '" target="_blank" rel="noopener noreferrer"><img src="' + image + '" width="' + width + '" height="' + height + '" alt="' + alt + '" loading="lazy"><span>' + instagramLabel + "</span></a>"
     )
     .join("");
 
@@ -312,9 +312,8 @@ function homePage() {
     '<section class="story-section"><div class="shell story-grid"><figure class="story-image"><img src="assets/images/editorial/consultation.webp" width="1400" height="934" alt="A personal hair consultation in a bright salon" loading="lazy"><figcaption>Personal from the first conversation.</figcaption></figure><div class="story-copy"><p class="eyebrow">Welcome to Esencia</p><h2>Your hair, understood.</h2><p>A personalised hair experience focused on beautiful results, healthy-looking hair and styles designed around you.</p><p>Whether you are refreshing your shape or exploring a smoothing treatment, each appointment is approached with warmth, honesty and attention to detail.</p><a class="text-link" href="about.html">Discover the studio →</a></div></div></section>',
     '<section class="section shell">' + sectionHeading("Services", "Carefully chosen. Beautifully finished.", "Three considered services, each beginning with a conversation about your hair and the result you want.") + serviceCards() + pricingNoteBlock() + "</section>",
     '<section class="section section--soft"><div class="shell">' + sectionHeading("Treatment guide", "Keratin or Nanoplasty?", "Two distinct smoothing services, compared simply. Your consultation is where the right choice becomes clear.") + comparison() + "</div></section>",
-    '<section class="results-section"><div class="shell results-grid"><div class="results-copy"><p class="eyebrow">Real results</p><h2>Transformations, without the guesswork.</h2><p>Verified Esencia before-and-after photography will replace this clearly marked preview once the studio image selection is approved.</p><a class="button button--outline" href="gallery.html">View gallery preview</a></div>' + resultsPlaceholder() + "</div></section>",
-    '<section class="section shell">' + sectionHeading("Client stories", "Loved for the whole experience.", "Only verified client reviews will appear here. These reserved cards make the final review section easy to complete.", "center") + '<div class="testimonial-grid">' + ["The consultation", "The experience", "The result"].map((label, index) => '<article class="testimonial-placeholder"><span>0' + (index + 1) + '</span><p>Verified client story</p><h3>' + label + "</h3><small>Reserved for an approved Esencia review</small></article>").join("") + "</div></section>",
-    '<section class="instagram-section"><div class="shell"><div class="instagram-heading">' + sectionHeading("From the studio", "Follow our transformations.", "The finished gallery will feature original Esencia work. These editorial images hold the layout for the local design review.") + '<a class="button" href="' + site.instagram + '" target="_blank" rel="noreferrer">Follow on Instagram ↗</a></div><div class="instagram-grid">' + instagramTiles + "</div></div></section>",
+    '<section class="results-section"><div class="shell results-grid"><div class="results-copy"><p class="eyebrow">Current work</p><h2>Transformations, without the guesswork.</h2><p>Visit Rachel’s official Instagram for current Esencia cuts, smoothing services and transformations.</p><a class="button button--outline" href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">See current results ↗</a></div>' + resultsPanel() + "</div></section>",
+    '<section class="instagram-section"><div class="shell"><div class="instagram-heading">' + sectionHeading("From the studio", "Follow our transformations.", "Follow Rachel’s official account for current Esencia work, appointment updates and studio inspiration.") + '<a class="button" href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">Follow on Instagram ↗</a></div><div class="instagram-grid">' + instagramTiles + "</div></div></section>",
     '<section class="section shell faq-section">' + sectionHeading("Good to know", "Before you book") + faq() + "</section>",
     cta(),
   ].join("\n");
@@ -349,7 +348,7 @@ function servicePage(service) {
       ["03", "Create", "Your service is delivered with care and attention to detail."],
       ["04", "Guide", "You leave with clear, practical guidance for your hair."],
     ].map(([number, title, copy]) => "<article><span>" + number + "</span><h3>" + title + "</h3><p>" + copy + "</p></article>").join("") + "</div></section>",
-    '<section class="result-band"><div class="shell">' + sectionHeading("Transformation gallery", "Real Esencia results will live here.", "Verified, unedited before-and-after imagery will be added during the photography review.", "center") + resultsPlaceholder(true) + "</div></section>",
+    '<section class="result-band"><div class="shell">' + sectionHeading("Current work", "See Rachel’s latest results.", "Visit the official Esencia Instagram account for current cuts, smoothing services and transformations.", "center") + resultsPanel(true) + '<div class="button-row button-row--center"><a class="button button--outline" href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">View results on Instagram ↗</a></div></div></section>',
     '<section class="section shell faq-section">' + sectionHeading("Questions", "About " + service.name) + faq(serviceFaqs) + "</section>",
     cta("Let’s plan your " + service.name.toLowerCase() + ".", "Tell Rachel about your hair and the finish you have in mind. Your consultation will confirm suitability, timing and final pricing."),
   ].join("\n");
@@ -359,12 +358,12 @@ function galleryPage() {
   const tiles = galleryImages
     .map(
       ([image, width, height, alt, category], index) =>
-        '<button class="gallery-tile gallery-tile--' + (index + 1) + '" type="button" data-gallery-image="' + image + '" data-gallery-alt="' + alt + '" data-gallery-caption="' + category + ' · Editorial preview image"><img src="' + image + '" width="' + width + '" height="' + height + '" alt="' + alt + '" loading="' + (index < 2 ? "eager" : "lazy") + '"><span><small>' + category + "</small><b>View</b></span></button>"
+        '<button class="gallery-tile gallery-tile--' + (index + 1) + '" type="button" data-gallery-image="' + image + '" data-gallery-alt="' + alt + '" data-gallery-caption="' + category + ' · Editorial image"><img src="' + image + '" width="' + width + '" height="' + height + '" alt="' + alt + '" loading="' + (index < 2 ? "eager" : "lazy") + '"><span><small>' + category + "</small><b>View</b></span></button>"
     )
     .join("");
   return [
-    pageHero("The work", "Hair, in its best light.", "An editorial preview of the gallery experience. Original Esencia cuts, smoothing services and transformations will replace these images after review.", "assets/images/editorial/glossy-hair.webp", 1400, 2101, "Long glossy brunette hair"),
-    '<section class="section shell"><div class="gallery-intro">' + sectionHeading("Gallery preview", "Shape. Softness. Shine.", "Each finished gallery image will be an authentic Esencia result, thoughtfully selected and never misleadingly altered.") + '<a class="button" href="' + site.instagram + '" target="_blank" rel="noreferrer">Current work on Instagram ↗</a></div><div class="gallery-grid">' + tiles + '</div><p class="image-note">Editorial stock photography is used only in this local layout preview. It is not presented as Esencia client work.</p></section>',
+    pageHero("The work", "Hair, in its best light.", "Explore the Esencia aesthetic, then visit Rachel’s official Instagram account for current client work and transformations.", "assets/images/editorial/glossy-hair.webp", 1400, 2101, "Long glossy brunette hair"),
+    '<section class="section shell"><div class="gallery-intro">' + sectionHeading("Gallery", "Shape. Softness. Shine.", "A visual introduction to the considered shapes, smooth finishes and healthy-looking shine that inspire Esencia.") + '<a class="button" href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">Current work on Instagram ↗</a></div><div class="gallery-grid">' + tiles + '</div><p class="image-note">Editorial photography is used for visual presentation and is not presented as Esencia client work.</p></section>',
     '<dialog class="lightbox" data-lightbox aria-label="Gallery image"><button class="lightbox__close" type="button" data-lightbox-close>Close ×</button><img data-lightbox-image src="assets/images/editorial/dark-hair.webp" width="1400" height="1709" alt=""><p data-lightbox-caption></p></dialog>',
     cta(),
   ].join("\n");
@@ -373,7 +372,7 @@ function galleryPage() {
 function aboutPage() {
   return [
     pageHero("About Esencia", "Personal by nature. Refined by design.", "A boutique hair studio centred on considered consultations, individual care and beautifully wearable results.", "assets/images/editorial/consultation.webp", 1400, 934, "Personal consultation in a light-filled salon"),
-    '<section class="section shell about-story"><div><p class="eyebrow">Meet Rachel</p><h2>A personal studio, created around the client in the chair.</h2></div><div><p>At the heart of Esencia is Rachel and a simple idea: your hair appointment should feel considered from beginning to end.</p><p>That means listening first, choosing services thoughtfully and creating a finish that works with your hair and your life — not just for the moment you leave the salon.</p><p>Rachel’s detailed professional story, training and experience will be added once approved for publication.</p></div></section>',
+    '<section class="section shell about-story"><div><p class="eyebrow">Meet Rachel</p><h2>A personal studio, created around the client in the chair.</h2></div><div><p>At the heart of Esencia is Rachel and a simple idea: your hair appointment should feel considered from beginning to end.</p><p>That means listening first, choosing services thoughtfully and creating a finish that works with your hair and your life — not just for the moment you leave the salon.</p><p>Follow Rachel on Instagram for current Esencia work, transformations and studio updates.</p></div></section>',
     '<section class="values-section"><div class="shell">' + sectionHeading("The approach", "Warm. Honest. Thoughtful.", "", "center") + '<div class="values-grid">' + [
       ["01", "Listen first", "Every appointment begins with a real conversation about your hair and your desired result."],
       ["02", "Treat with intention", "Services are recommended thoughtfully, with clear starting prices and expectations."],
@@ -389,7 +388,7 @@ function contactPage(isBooking = false) {
     '<section class="' + (isBooking ? "simple-hero shell" : "contact-hero") + '">' +
       (isBooking
         ? '<p class="eyebrow">Book an appointment</p><h1>Let’s begin with your hair.</h1><p>Share a little about what you are considering and Rachel will help you choose the right appointment.</p>'
-        : '<div class="shell contact-hero__grid"><div><p class="eyebrow">Contact & book</p><h1>Let’s talk about your hair.</h1><p>Tell Rachel what you are considering and she’ll help you choose the right appointment.</p></div><div class="contact-details"><div><span>01</span><small>Email</small><a href="mailto:' + site.email + '">' + site.email + '</a></div><div><span>02</span><small>Instagram</small><a href="' + site.instagram + '" target="_blank" rel="noreferrer">' + instagramLabel + ' ↗</a></div><div><span>03</span><small>Studio details</small><p>Location and opening hours are confirmed directly with your appointment.</p></div></div></div>') +
+        : '<div class="shell contact-hero__grid"><div><p class="eyebrow">Contact & book</p><h1>Let’s talk about your hair.</h1><p>Tell Rachel what you are considering and she’ll help you choose the right appointment.</p></div><div class="contact-details"><div><span>01</span><small>Email</small><a href="mailto:' + site.email + '">' + site.email + '</a></div><div><span>02</span><small>Instagram</small><a href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">' + instagramLabel + ' ↗</a></div><div><span>03</span><small>Studio details</small><p>Location and opening hours are confirmed directly with your appointment.</p></div></div></div>') +
       "</section>",
     '<section class="section shell">' + contactForm() + "</section>",
   ].join("\n");
@@ -399,7 +398,7 @@ const pages = [
   ["index.html", "home", "Esencia Hair Studio | Premium Haircuts & Smoothing", "Personalised ladies haircuts, Keratin smoothing and Nanoplasty in a warm, refined studio experience.", homePage()],
   ["services.html", "services", "Services & Pricing | Esencia Hair Studio", "Explore ladies haircuts, Keratin smoothing and Nanoplasty services and pricing at Esencia Hair Studio.", servicesPage()],
   ...services.map((service) => [service.file, service.slug, service.name + " | Esencia Hair Studio", "Explore " + service.name + " benefits, pricing and the consultation-led experience at Esencia Hair Studio.", servicePage(service), service.image]),
-  ["gallery.html", "gallery", "Gallery | Esencia Hair Studio", "Preview the elegant Esencia Hair Studio gallery and visit the official Instagram account for current work.", galleryPage()],
+  ["gallery.html", "gallery", "Gallery | Esencia Hair Studio", "Explore the Esencia Hair Studio aesthetic and visit Rachel’s official Instagram account for current client work.", galleryPage()],
   ["about.html", "about", "About | Esencia Hair Studio", "Meet Rachel and discover the warm, personalised philosophy behind Esencia Hair Studio.", aboutPage()],
   ["contact.html", "contact", "Contact & Book | Esencia Hair Studio", "Contact Esencia Hair Studio or prepare an appointment enquiry for Rachel.", contactPage(false)],
   ["book.html", "book", "Book an Appointment | Esencia Hair Studio", "Prepare an appointment enquiry for a haircut, Keratin smoothing, Nanoplasty or consultation.", contactPage(true)],
