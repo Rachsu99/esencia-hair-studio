@@ -82,8 +82,7 @@ test("keeps the enquiry flow honest and accessible", async () => {
   assert.match(home, /assets\/images\/brand\/rachel-portrait\.webp/);
   assert.match(home, /rachel-portrait-560\.webp 560w/);
   assert.doesNotMatch(home, /hero-photo--detail/);
-  assert.match(contact, /assets\/images\/brand\/contact-flower\.webp/);
-  assert.match(contact, /contact-flower-560\.webp 560w/);
+  assert.doesNotMatch(contact, /contact-hero__flower|contact-flower\.webp/);
   assert.match(contact, /Nothing is submitted to a server/);
   assert.match(contact, /name="name"[^>]*required/);
   assert.match(contact, /name="email" type="email"/);
