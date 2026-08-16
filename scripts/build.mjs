@@ -1,12 +1,18 @@
 import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
-import { galleryImages, pricingNote, services, site, treatmentFaqs } from "../site.config.mjs";
+import { galleryImages, services, site, treatmentFaqs } from "../site.config.mjs";
 
 const root = process.cwd();
 const productionUrl = (process.env.SITE_URL || site.url || "").replace(/\/$/, "");
 const year = new Date().getFullYear();
 const instagramLabel = site.instagramHandle;
+const hiddenServiceSlugs = new Set(["nanoplasty"]);
+const publicServices = services.filter((service) => !hiddenServiceSlugs.has(service.slug));
+const hiddenServices = services.filter((service) => hiddenServiceSlugs.has(service.slug));
+const publicTreatmentFaqs = treatmentFaqs.filter(([question]) => !question.toLowerCase().includes("nanoplasty"));
+const publicGalleryImages = galleryImages.filter(([, , , , category]) => category !== "Nanoplasty");
+const publicPricingNote = "Keratin prices are based on hair length, thickness and the amount of product required. Final pricing will be confirmed following consultation.";
 const cssVersion = createHash("sha256")
   .update(await readFile(path.join(root, "css", "style.css")))
   .digest("hex")
@@ -26,7 +32,6 @@ const navItems = [
   ["Home", "index.html", "home"],
   ["Services", "services.html", "services"],
   ["Keratin", "keratin.html", "keratin"],
-  ["Nanoplasty", "nanoplasty.html", "nanoplasty"],
   ["Gallery", "gallery.html", "gallery"],
   ["About", "about.html", "about"],
   ["Contact", "contact.html", "contact"],
@@ -79,7 +84,7 @@ function footer() {
     '<div class="shell footer__grid">',
     '<div class="footer__brand">' + brandMark() + '<p>Personalised haircuts and smoothing treatments, delivered with care and a refined, wearable finish.</p><a class="text-link" href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">Follow ' + instagramLabel + " ↗</a></div>",
     '<div><p class="footer__heading">Explore</p><a href="index.html">Home</a><a href="services.html">Services</a><a href="gallery.html">Gallery</a><a href="about.html">About</a></div>',
-    '<div><p class="footer__heading">Services</p><a href="haircuts.html">Ladies haircuts</a><a href="keratin.html">Keratin smoothing</a><a href="nanoplasty.html">Nanoplasty</a></div>',
+    '<div><p class="footer__heading">Services</p><a href="haircuts.html">Ladies haircuts</a><a href="keratin.html">Keratin smoothing</a></div>',
     '<div><p class="footer__heading">Contact</p><a href="mailto:' + site.email + '">' + site.email + '</a><a href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">' + instagramLabel + ' ↗</a><p>Location and opening hours are confirmed with your appointment.</p><a class="button button--light button--small" href="book.html">Request appointment</a></div>',
     "</div>",
     '<div class="shell footer__bottom"><span>© <span data-year>' + year + "</span> Esencia Hair Studio. All rights reserved.</span><span>Appointments are arranged directly with Rachel.</span></div>",
@@ -96,7 +101,7 @@ function schema() {
     email: site.email,
     sameAs: [site.instagram],
     priceRange: "$$",
-    description: "Boutique hair studio offering personalised ladies haircuts, Keratin smoothing and Nanoplasty.",
+    description: "Boutique hair studio offering personalised ladies haircuts and Keratin smoothing.",
   }).replaceAll("<", "\\u003c");
 }
 
@@ -172,8 +177,8 @@ function pageHero(eyebrow, title, copy, image, width, height, alt, dark = false)
 
 function serviceCards() {
   return (
-    '<div class="service-grid">' +
-    services
+    '<div class="service-grid service-grid--limited">' +
+    publicServices
       .map(
         (service, index) =>
           '<article class="service-card"><a class="service-card__image" href="' +
@@ -208,7 +213,7 @@ function serviceCards() {
 }
 
 function pricingNoteBlock() {
-  return '<div class="pricing-note"><span>A note on pricing</span><p>' + pricingNote + "</p></div>";
+  return '<div class="pricing-note"><span>A note on pricing</span><p>' + publicPricingNote + "</p></div>";
 }
 
 function comparison() {
@@ -235,7 +240,7 @@ function comparison() {
   ].join("");
 }
 
-function faq(items = treatmentFaqs) {
+function faq(items = publicTreatmentFaqs) {
   return (
     '<div class="faq-list">' +
     items
@@ -258,8 +263,8 @@ function cta(title = "Ready for hair that feels more like you?", copy = "Start w
 
 function allPrices() {
   return (
-    '<div class="all-prices">' +
-    services
+    '<div class="all-prices all-prices--limited">' +
+    publicServices
       .map(
         (service) =>
           '<article><p class="eyebrow">' +
@@ -285,7 +290,7 @@ function contactForm() {
     '<label>Full name<input name="name" autocomplete="name" required></label>',
     '<label>Phone<input name="phone" type="tel" autocomplete="tel" required></label>',
     '<label>Email<input name="email" type="email" autocomplete="email" required></label>',
-    '<label>Service interested in<select name="service" required><option value="" selected disabled>Select a service</option><option>Ladies Haircut</option><option>Shampoo, Treatment &amp; Haircut</option><option>Keratin Smoothing</option><option>Nanoplasty</option><option>Consultation</option><option>Other</option></select></label>',
+    '<label>Service interested in<select name="service" required><option value="" selected disabled>Select a service</option><option>Ladies Haircut</option><option>Shampoo, Treatment &amp; Haircut</option><option>Keratin Smoothing</option><option>Consultation</option><option>Other</option></select></label>',
     '<label>Hair length<select name="hairLength" required><option value="" selected disabled>Select hair length</option><option>Short</option><option>Medium</option><option>Long</option><option>Extra long / thick</option><option>Not sure</option></select></label>',
     '<label>Preferred date<input name="date" type="date" data-date-input></label>',
     '<label class="form-grid__full">Message<textarea name="message" rows="5" placeholder="What would you like help with?" required></textarea></label>',
@@ -301,7 +306,7 @@ function resultsPanel(wide = false) {
 }
 
 function homePage() {
-  const instagramTiles = galleryImages
+  const instagramTiles = publicGalleryImages
     .slice(0, 4)
     .map(
       ([image, width, height, alt]) =>
@@ -311,12 +316,11 @@ function homePage() {
 
   return [
     '<section class="home-hero"><div class="shell home-hero__grid">',
-    '<div class="home-hero__copy"><p class="eyebrow">Boutique hair studio · Personalised care</p><h1>Beautiful hair.<br><em>Effortlessly you.</em></h1><p class="home-hero__lead">A personal studio experience for considered cuts, smoother texture and healthy-looking, beautifully wearable hair.</p><div class="button-row"><a class="button" href="book.html">Book your appointment</a><a class="text-link" href="services.html">Explore treatments →</a></div><div class="home-hero__meta"><span>01</span><p>Ladies haircuts · Keratin smoothing<br>Nanoplasty · Consultations</p></div></div>',
+    '<div class="home-hero__copy"><p class="eyebrow">Boutique hair studio · Personalised care</p><h1>Beautiful hair.<br><em>Effortlessly you.</em></h1><p class="home-hero__lead">A personal studio experience for considered cuts, smoother texture and healthy-looking, beautifully wearable hair.</p><div class="button-row"><a class="button" href="book.html">Book your appointment</a><a class="text-link" href="services.html">Explore treatments →</a></div><div class="home-hero__meta"><span>01</span><p>Ladies haircuts · Keratin smoothing<br>Personal consultations</p></div></div>',
     '<div class="home-hero__visual"><figure class="hero-photo hero-photo--main"><img src="assets/images/brand/Rachell.png" width="893" height="1189" alt="Rachel, stylist at Esencia Hair Studio" fetchpriority="high" decoding="async"></figure><div class="hero-stamp"><span>Personalised</span><strong>for you</strong></div></div>',
     '</div><div class="marquee" aria-hidden="true"><span>Thoughtful consultations</span><i>✦</i><span>Beautifully wearable results</span><i>✦</i><span>A warm, refined experience</span></div></section>',
     '<section class="story-section"><div class="shell story-grid"><figure class="story-image"><img src="assets/images/editorial/consultation.webp" width="1400" height="934" alt="A personal hair consultation in a bright salon" loading="lazy"><figcaption>Personal from the first conversation.</figcaption></figure><div class="story-copy"><p class="eyebrow">Welcome to Esencia</p><h2>Your hair, understood.</h2><p>A personalised hair experience focused on beautiful results, healthy-looking hair and styles designed around you.</p><p>Whether you are refreshing your shape or exploring a smoothing treatment, each appointment is approached with warmth, honesty and attention to detail.</p><a class="text-link" href="about.html">Discover the studio →</a></div></div></section>',
-    '<section class="section shell">' + sectionHeading("Services", "Carefully chosen. Beautifully finished.", "Three considered services, each beginning with a conversation about your hair and the result you want.") + serviceCards() + pricingNoteBlock() + "</section>",
-    '<section class="section section--soft"><div class="shell">' + sectionHeading("Treatment guide", "Keratin or Nanoplasty?", "Two distinct smoothing services, compared simply. Your consultation is where the right choice becomes clear.") + comparison() + "</div></section>",
+    '<section class="section shell">' + sectionHeading("Services", "Carefully chosen. Beautifully finished.", "Two considered services, each beginning with a conversation about your hair and the result you want.") + serviceCards() + pricingNoteBlock() + "</section>",
     '<section class="results-section"><div class="shell results-grid"><div class="results-copy"><p class="eyebrow">Current work</p><h2>Transformations, without the guesswork.</h2><p>Visit Rachel’s official Instagram for current Esencia cuts, smoothing services and transformations.</p><a class="button button--outline" href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">See current results ↗</a></div>' + resultsPanel() + "</div></section>",
     '<section class="instagram-section"><div class="shell"><div class="instagram-heading">' + sectionHeading("From the studio", "Follow our transformations.", "Follow Rachel’s official account for current Esencia work, appointment updates and studio inspiration.") + '<a class="button" href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">Follow on Instagram ↗</a></div><div class="instagram-grid">' + instagramTiles + "</div></div></section>",
     '<section class="section shell faq-section">' + sectionHeading("Good to know", "Before you book") + faq() + "</section>",
@@ -328,7 +332,6 @@ function servicesPage() {
   return [
     pageHero("Services & pricing", "Beautifully tailored to you.", "Considered cuts and smoothing services, with clear starting prices and a consultation-led approach.", "assets/images/editorial/long-hair.webp", 1400, 2100, "Long softly styled brown hair"),
     '<section class="section shell">' + sectionHeading("The menu", "Services and starting prices.", "Choose a service to see the full experience, benefits and pricing guide.") + allPrices() + pricingNoteBlock() + "</section>",
-    '<section class="section section--soft"><div class="shell">' + sectionHeading("Compare treatments", "Smoothing, made simpler.") + comparison() + "</div></section>",
     cta(),
   ].join("\n");
 }
@@ -341,7 +344,7 @@ function servicePage(service) {
         ["Can I add a treatment?", "Yes. The Shampoo, Treatment & Haircut service is available from $95."],
         ["How should I prepare?", "Bring reference images if helpful and tell Rachel how you usually wear and style your hair."],
       ]
-    : treatmentFaqs;
+    : publicTreatmentFaqs;
 
   return [
     pageHero(service.eyebrow, service.name, service.intro, service.image, service.width, service.height, service.alt, true),
@@ -360,7 +363,7 @@ function servicePage(service) {
 }
 
 function galleryPage() {
-  const tiles = galleryImages
+  const tiles = publicGalleryImages
     .map(
       ([image, width, height, alt, category], index) =>
         '<button class="gallery-tile gallery-tile--' + (index + 1) + '" type="button" data-gallery-image="' + image + '" data-gallery-alt="' + alt + '" data-gallery-caption="' + category + ' · Editorial image"><img src="' + image + '" width="' + width + '" height="' + height + '" alt="' + alt + '" loading="lazy"><span><small>' + category + "</small><b>View</b></span></button>"
@@ -400,17 +403,20 @@ function contactPage(isBooking = false) {
 }
 
 const pages = [
-  ["index.html", "home", "Esencia Hair Studio | Premium Haircuts & Smoothing", "Personalised ladies haircuts, Keratin smoothing and Nanoplasty in a warm, refined studio experience.", homePage()],
-  ["services.html", "services", "Services & Pricing | Esencia Hair Studio", "Explore ladies haircuts, Keratin smoothing and Nanoplasty services and pricing at Esencia Hair Studio.", servicesPage()],
-  ...services.map((service) => [service.file, service.slug, service.name + " | Esencia Hair Studio", "Explore " + service.name + " benefits, pricing and the consultation-led experience at Esencia Hair Studio.", servicePage(service), service.image]),
+  ["index.html", "home", "Esencia Hair Studio | Premium Haircuts & Smoothing", "Personalised ladies haircuts and Keratin smoothing in a warm, refined studio experience.", homePage()],
+  ["services.html", "services", "Services & Pricing | Esencia Hair Studio", "Explore personalised ladies haircuts and Keratin smoothing services and pricing at Esencia Hair Studio.", servicesPage()],
+  ...publicServices.map((service) => [service.file, service.slug, service.name + " | Esencia Hair Studio", "Explore " + service.name + " benefits, pricing and the consultation-led experience at Esencia Hair Studio.", servicePage(service), service.image]),
   ["gallery.html", "gallery", "Gallery | Esencia Hair Studio", "Explore the Esencia Hair Studio aesthetic and visit Rachel’s official Instagram account for current client work.", galleryPage()],
   ["about.html", "about", "About | Esencia Hair Studio", "Meet Rachel and discover the warm, personalised philosophy behind Esencia Hair Studio.", aboutPage()],
   ["contact.html", "contact", "Contact & Book | Esencia Hair Studio", "Contact Esencia Hair Studio or prepare an appointment enquiry for Rachel.", contactPage(false)],
-  ["book.html", "book", "Book an Appointment | Esencia Hair Studio", "Prepare an appointment enquiry for a haircut, Keratin smoothing, Nanoplasty or consultation.", contactPage(true)],
+  ["book.html", "book", "Book an Appointment | Esencia Hair Studio", "Prepare an appointment enquiry for a haircut, Keratin smoothing or consultation.", contactPage(true)],
 ];
 
 await rm(path.join(root, "dist"), { recursive: true, force: true });
 await mkdir(path.join(root, "dist"), { recursive: true });
+for (const service of hiddenServices) {
+  await rm(path.join(root, service.file), { force: true });
+}
 
 for (const [file, active, title, description, content, socialImage] of pages) {
   const output = layout({ file, active, title, description, content, socialImage });

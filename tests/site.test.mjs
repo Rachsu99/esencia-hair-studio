@@ -11,7 +11,6 @@ const pages = [
   "services.html",
   "haircuts.html",
   "keratin.html",
-  "nanoplasty.html",
   "gallery.html",
   "about.html",
   "contact.html",
@@ -90,6 +89,10 @@ test("keeps the enquiry flow honest and accessible", async () => {
   assert.match(contact, /Prepare email enquiry/);
   assert.match(gallery, /<dialog class="lightbox"/);
   assert.match(gallery, /data-lightbox-close/);
+  assert.equal(existsSync(path.join(root, "nanoplasty.html")), false);
+  for (const page of [home, contact, gallery]) {
+    assert.doesNotMatch(page, /Nanoplasty|nanoplasty\.html/);
+  }
 });
 
 test("emits production domain metadata and Cloudflare deployment files", async () => {
@@ -103,6 +106,7 @@ test("emits production domain metadata and Cloudflare deployment files", async (
   assert.match(keratin, /og:image" content="https:\/\/esenciahair\.co\.nz\/assets\/images\/editorial\/silky-hair\.webp"/);
   assert.match(notFound, /noindex,follow/);
   assert.match(sitemap, /<loc>https:\/\/esenciahair\.co\.nz\/services<\/loc>/);
+  assert.doesNotMatch(sitemap, /nanoplasty/);
   assert.doesNotMatch(sitemap, /\.html<\/loc>/);
   assert.equal(existsSync(path.join(root, "dist", "_headers")), true);
   assert.equal(existsSync(path.join(root, "dist", "robots.txt")), true);
