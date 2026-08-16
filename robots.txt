@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://esenciahair.co.nz/sitemap.xml

@@ -1,0 +1,13 @@
+# Local dependencies and generated output
+node_modules/
+dist/
+
+# Local environment and deployment state
+.env*
+!.env.example
+.wrangler/
+
+# Operating-system and log files
+.DS_Store
+Thumbs.db
+*.log

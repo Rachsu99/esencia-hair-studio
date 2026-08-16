@@ -1,0 +1,17 @@
+{
+  "name": "esencia-hair-studio",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "node scripts/build.mjs && node scripts/serve.mjs",
+    "build": "node scripts/build.mjs",
+    "preview": "node scripts/build.mjs && node scripts/serve.mjs --dist",
+    "start": "node scripts/serve.mjs --dist",
+    "test": "npm run build && node --test tests/site.test.mjs",
+    "lint": "node --check scripts/build.mjs && node --check scripts/serve.mjs && node --check js/main.js"
+  },
+  "type": "module"
+}
