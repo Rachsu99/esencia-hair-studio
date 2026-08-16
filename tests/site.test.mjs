@@ -76,8 +76,14 @@ test("has no broken local page or asset references", async () => {
 });
 
 test("keeps the enquiry flow honest and accessible", async () => {
+  const home = await readFile(path.join(root, "index.html"), "utf8");
   const contact = await readFile(path.join(root, "contact.html"), "utf8");
   const gallery = await readFile(path.join(root, "gallery.html"), "utf8");
+  assert.match(home, /assets\/images\/brand\/rachel-portrait\.webp/);
+  assert.match(home, /rachel-portrait-560\.webp 560w/);
+  assert.doesNotMatch(home, /hero-photo--detail/);
+  assert.match(contact, /assets\/images\/brand\/contact-flower\.webp/);
+  assert.match(contact, /contact-flower-560\.webp 560w/);
   assert.match(contact, /Nothing is submitted to a server/);
   assert.match(contact, /name="name"[^>]*required/);
   assert.match(contact, /name="email" type="email"/);
