@@ -80,8 +80,8 @@ test("keeps the enquiry flow honest and accessible", async () => {
   const home = await readFile(path.join(root, "index.html"), "utf8");
   const contact = await readFile(path.join(root, "contact.html"), "utf8");
   const gallery = await readFile(path.join(root, "gallery.html"), "utf8");
-  assert.match(home, /assets\/images\/brand\/rachel-portrait\.webp/);
-  assert.match(home, /rachel-portrait-560\.webp 560w/);
+  assert.match(home, /assets\/images\/brand\/rachel-sticker\.webp/);
+  assert.match(home, /rachel-sticker-560\.webp 560w/);
   assert.doesNotMatch(home, /hero-photo--detail/);
   assert.doesNotMatch(contact, /contact-hero__flower|contact-flower\.webp/);
   assert.match(contact, /Nothing is submitted to a server/);
