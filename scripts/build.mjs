@@ -182,7 +182,7 @@ function serviceCards() {
           '" alt="' +
           service.alt +
           '" loading="' +
-          (index === 0 ? "eager" : "lazy") +
+          "lazy" +
           '"><span>0' +
           (index + 1) +
           '</span></a><div class="service-card__body"><p class="eyebrow">' +
@@ -358,7 +358,7 @@ function galleryPage() {
   const tiles = galleryImages
     .map(
       ([image, width, height, alt, category], index) =>
-        '<button class="gallery-tile gallery-tile--' + (index + 1) + '" type="button" data-gallery-image="' + image + '" data-gallery-alt="' + alt + '" data-gallery-caption="' + category + ' · Editorial image"><img src="' + image + '" width="' + width + '" height="' + height + '" alt="' + alt + '" loading="' + (index < 2 ? "eager" : "lazy") + '"><span><small>' + category + "</small><b>View</b></span></button>"
+        '<button class="gallery-tile gallery-tile--' + (index + 1) + '" type="button" data-gallery-image="' + image + '" data-gallery-alt="' + alt + '" data-gallery-caption="' + category + ' · Editorial image"><img src="' + image + '" width="' + width + '" height="' + height + '" alt="' + alt + '" loading="lazy"><span><small>' + category + "</small><b>View</b></span></button>"
     )
     .join("");
   return [
