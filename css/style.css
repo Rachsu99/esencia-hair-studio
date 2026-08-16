@@ -75,7 +75,8 @@ em { font-weight: 400; color: var(--rose); }
 .hero-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform 900ms cubic-bezier(.2,.8,.2,1); }
 .hero-photo:hover img { transform: scale(1.035); }
 .hero-photo--main { width: 78%; height: 94%; right: 0; top: 0; box-shadow: none; }
-.hero-photo--main img { object-position: 50% 30%; -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 50%, rgba(0,0,0,.9) 63%, rgba(0,0,0,.45) 82%, transparent 100%); mask-image: linear-gradient(to bottom, #000 0%, #000 50%, rgba(0,0,0,.9) 63%, rgba(0,0,0,.45) 82%, transparent 100%); }
+.hero-photo--main img { object-fit: contain; object-position: 50% 50%; }
+.hero-photo--main:hover img { transform: none; }
 .hero-stamp { position: absolute; z-index: 2; right: 68%; top: 8%; width: 132px; height: 132px; display: grid; place-content: center; text-align: center; border: 1px solid rgba(250,247,243,.7); border-radius: 50%; background: rgba(45,28,24,.78); color: var(--ivory); backdrop-filter: blur(10px); transform: rotate(-8deg); }
 .hero-stamp span { font-size: .55rem; letter-spacing: .17em; text-transform: uppercase; }
 .hero-stamp strong { font-family: var(--serif); font-size: 1.34rem; font-style: italic; font-weight: 400; }
