@@ -30,6 +30,7 @@ test("builds a complete static multi-page website", async () => {
     assert.match(html, /<meta name="viewport"/);
     assert.match(html, /<main id="main-content">/);
     assert.match(html, /css\/style\.css/);
+    assert.match(html, /css\/style\.css\?v=[a-f0-9]{10}/);
     assert.match(html, /js\/main\.js/);
     assert.doesNotMatch(html, /localhost|127\.0\.0\.1/);
     assert.doesNotMatch(html, /local website preview|from this local website/i);

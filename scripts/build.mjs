@@ -1,4 +1,5 @@
 import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { galleryImages, pricingNote, services, site, treatmentFaqs } from "../site.config.mjs";
 
@@ -6,6 +7,10 @@ const root = process.cwd();
 const productionUrl = (process.env.SITE_URL || site.url || "").replace(/\/$/, "");
 const year = new Date().getFullYear();
 const instagramLabel = site.instagramHandle;
+const cssVersion = createHash("sha256")
+  .update(await readFile(path.join(root, "css", "style.css")))
+  .digest("hex")
+  .slice(0, 10);
 
 const routeFor = (file) =>
   file === "index.html" ? "/" : "/" + file.replace(/\.html$/, "");
@@ -127,8 +132,8 @@ function layout({ file, active, title, description, content, socialImage = "asse
     '<meta name="twitter:description" content="' + escapeHtml(description) + '">',
     productionMeta,
     '<link rel="icon" type="image/webp" href="assets/images/brand/esencia-logo.webp">',
-    '<link rel="preload" href="css/style.css" as="style">',
-    '<link rel="stylesheet" href="css/style.css">',
+    '<link rel="preload" href="css/style.css?v=' + cssVersion + '" as="style">',
+    '<link rel="stylesheet" href="css/style.css?v=' + cssVersion + '">',
     '<script type="application/ld+json">' + schema() + "</script>",
     '<script src="js/main.js" defer></script>',
     "</head>",
