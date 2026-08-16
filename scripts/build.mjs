@@ -297,7 +297,7 @@ function contactForm() {
 }
 
 function resultsPanel(wide = false) {
-  return '<div class="result-placeholder' + (wide ? " result-placeholder--wide" : "") + '" aria-label="Esencia Hair Studio brand artwork"><div><span>Shape</span></div><div><span>Shine</span></div><p>See current Esencia work on Instagram</p></div>';
+  return '<div class="result-placeholder' + (wide ? " result-placeholder--wide" : "") + '" aria-label="From consultation to a considered, wearable finish"><article class="result-placeholder__panel result-placeholder__panel--shape"><span class="result-placeholder__step">01 · Shape</span><div class="result-placeholder__copy"><strong>Designed around you.</strong><small>Texture · movement · routine</small></div></article><article class="result-placeholder__panel result-placeholder__panel--finish"><span class="result-placeholder__step">02 · Finish</span><div class="result-placeholder__copy"><strong>Polished, never overdone.</strong><small>Softness · balance · shine</small></div></article><p class="result-placeholder__path"><span>Consult</span><i aria-hidden="true">→</i><span>Shape</span><i aria-hidden="true">→</i><span>Finish</span></p></div>';
 }
 
 function homePage() {
