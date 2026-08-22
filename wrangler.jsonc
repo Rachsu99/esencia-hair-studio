@@ -8,7 +8,9 @@
   },
   "d1_databases": [
     {
-      "binding": "ADMIN_DB"
+      "binding": "ADMIN_DB",
+      "database_name": "esencia-hair-studio-admin",
+      "database_id": "0b4598c2-932f-43bc-9865-34060a380660"
     }
   ],
   "observability": {
