@@ -55,6 +55,35 @@ function cloneDefaultContent(): SiteContent {
   return JSON.parse(JSON.stringify(DEFAULT_CONTENT)) as SiteContent;
 }
 
+function mergeContent(raw: Partial<SiteContent>): SiteContent {
+  const defaults = cloneDefaultContent();
+  const storedServices = raw.services || {};
+  const services = Object.fromEntries(
+    Object.entries(defaults.services).map(([slug, fallback]) => {
+      const stored = storedServices[slug];
+      if (!stored || !Array.isArray(stored.prices) || stored.prices.length !== fallback.prices.length) return [slug, fallback];
+      return [slug, { ...fallback, ...stored, slug, prices: stored.prices }];
+    })
+  ) as Record<string, ServiceContent>;
+  // Nanoplasty is a current public service. This migration makes an older hidden setting visible.
+  if (services.nanoplasty) services.nanoplasty.visible = true;
+
+  const storedGallery = Array.isArray(raw.gallery) ? raw.gallery : [];
+  const gallery = defaults.gallery.map((fallback) => {
+    const stored = storedGallery.find((item) => item?.id === fallback.id && item.image === fallback.image);
+    return stored ? { ...fallback, ...stored, id: fallback.id, image: fallback.image } : fallback;
+  });
+
+  return {
+    ...defaults,
+    services,
+    gallery,
+    contact: { ...defaults.contact, ...(raw.contact || {}) },
+    seo: { ...defaults.seo, ...(raw.seo || {}) },
+    updatedAt: raw.updatedAt || defaults.updatedAt,
+  };
+}
+
 async function ensureSchema(env: Env): Promise<void> {
   await env.ADMIN_DB.batch([
     env.ADMIN_DB.prepare("CREATE TABLE IF NOT EXISTS site_content (id INTEGER PRIMARY KEY CHECK (id = 1), data TEXT NOT NULL, updated_at TEXT NOT NULL)"),
@@ -70,7 +99,7 @@ async function loadContent(env: Env): Promise<SiteContent> {
   try {
     const row = await env.ADMIN_DB.prepare("SELECT data, updated_at FROM site_content WHERE id = 1").first<ContentRow>();
     if (!row) return cloneDefaultContent();
-    const content = JSON.parse(row.data) as SiteContent;
+    const content = mergeContent(JSON.parse(row.data) as Partial<SiteContent>);
     content.updatedAt = row.updated_at;
     return content;
   } catch {

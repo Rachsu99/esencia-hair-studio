@@ -64,7 +64,7 @@ export const DEFAULT_CONTENT: SiteContent = {
     title: String(category),
     alt: String(alt),
     category: String(category),
-    visible: category !== "Nanoplasty",
+    visible: true,
   })),
   contact: {
     email: site.email,
@@ -76,9 +76,9 @@ export const DEFAULT_CONTENT: SiteContent = {
     bookingLink: "",
   },
   seo: {
-    homepageTitle: "Esencia Hair Studio | Premium Haircuts & Smoothing",
-    metaDescription: "Personalised ladies haircuts and Keratin smoothing in a warm, refined studio experience.",
-    socialDescription: "Personalised haircuts and smoothing treatments, delivered with care and a refined, wearable finish.",
+    homepageTitle: "Esencia Hair Studio | Hair, Extensions & Smoothing",
+    metaDescription: "Personalised haircuts, extensions, styling and smoothing in a warm, refined studio experience.",
+    socialDescription: "Personalised haircuts, extensions, styling and smoothing, delivered with care and a refined, wearable finish.",
     defaultOgImage: "/assets/images/brand/esencia-social-share.jpg",
     businessName: site.name,
     canonicalDomain: site.url,

@@ -11,6 +11,10 @@ const pages = [
   "services.html",
   "haircuts.html",
   "keratin.html",
+  "nanoplasty.html",
+  "hair-extensions.html",
+  "extension-removal.html",
+  "styling.html",
   "gallery.html",
   "about.html",
   "contact.html",
@@ -48,6 +52,9 @@ test("keeps confirmed business details and pricing correct", async () => {
       [["Ladies Haircut", "$85"], ["Shampoo, Treatment & Haircut", "$95"]],
       [["Short Hair", "from $180"], ["Medium Hair", "from $230"], ["Long Hair", "from $280"], ["Extra Long / Thick Hair", "from $330"]],
       [["Short Hair", "from $280"], ["Medium Hair", "from $340"], ["Long Hair", "from $400"], ["Extra Long / Thick Hair", "from $550"]],
+      [["Tape Extensions", "Price on Consultation"], ["K-Tip Extensions", "Price on Consultation"]],
+      [["Tape Removal", "from $60"], ["K-Tip Removal", "from $100"]],
+      [["Shampoo & Blow Wave", "$55"], ["Curls / Styling", "$45"]],
     ]
   );
   for (const page of pages) {
@@ -79,7 +86,7 @@ test("keeps the enquiry flow honest and accessible", async () => {
   const home = await readFile(path.join(root, "index.html"), "utf8");
   const contact = await readFile(path.join(root, "contact.html"), "utf8");
   const gallery = await readFile(path.join(root, "gallery.html"), "utf8");
-  assert.match(home, /assets\/images\/brand\/Rachell\.png/);
+  assert.match(home, /assets\/images\/studio\/rachel-hero\.webp/);
   assert.doesNotMatch(home, /rachel-sticker/);
   assert.doesNotMatch(home, /hero-photo--detail/);
   assert.doesNotMatch(contact, /contact-hero__flower|contact-flower\.webp/);
@@ -90,12 +97,26 @@ test("keeps the enquiry flow honest and accessible", async () => {
   assert.match(gallery, /<dialog class="lightbox"/);
   assert.match(gallery, /data-lightbox-close/);
   assert.equal(existsSync(path.join(root, "nanoplasty.html")), true);
-  for (const page of [home, contact, gallery]) {
-    assert.match(page, /data-service="nanoplasty" hidden/);
-    for (const match of page.matchAll(/<[^>]+data-service="nanoplasty"[^>]*>/g)) {
-      assert.match(match[0], /data-service="nanoplasty"[^>]*hidden/);
-    }
-  }
+  assert.match(home, /data-service="nanoplasty"/);
+  assert.doesNotMatch(home, /data-service="nanoplasty" hidden/);
+});
+
+test("publishes the requested Keratin and extension information", async () => {
+  const keratin = await readFile(path.join(root, "keratin.html"), "utf8");
+  const extensions = await readFile(path.join(root, "hair-extensions.html"), "utf8");
+  const removal = await readFile(path.join(root, "extension-removal.html"), "utf8");
+  const styling = await readFile(path.join(root, "styling.html"), "utf8");
+
+  assert.match(keratin, /avoid washing your hair for 48 hours/i);
+  assert.match(keratin, /sulfate-free shampoo and conditioner/i);
+  assert.match(keratin, /Results can last up to 3 months/i);
+  assert.match(keratin, /Ready for smoother, more manageable hair/i);
+  assert.match(extensions, /Tape Extensions/);
+  assert.match(extensions, /K-Tip Extensions/);
+  assert.match(extensions, /Price on Consultation/);
+  assert.match(removal, /Tape Removal/);
+  assert.match(removal, /K-Tip Removal/);
+  assert.match(styling, /Extra Long \/ Thick Hair — \+\$10/);
 });
 
 test("keeps private admin routes and credentials out of public markup", async () => {
@@ -119,10 +140,11 @@ test("emits production domain metadata and Cloudflare deployment files", async (
 
   assert.match(home, /<link rel="canonical" href="https:\/\/esenciahair\.co\.nz\/">/);
   assert.match(keratin, /<link rel="canonical" href="https:\/\/esenciahair\.co\.nz\/keratin">/);
-  assert.match(keratin, /og:image" content="https:\/\/esenciahair\.co\.nz\/assets\/images\/editorial\/silky-hair\.webp"/);
+  assert.match(keratin, /og:image" content="https:\/\/esenciahair\.co\.nz\/assets\/images\/studio\/glossy-brunette\.webp"/);
   assert.match(notFound, /noindex,follow/);
   assert.match(sitemap, /<loc>https:\/\/esenciahair\.co\.nz\/services<\/loc>/);
-  assert.doesNotMatch(sitemap, /nanoplasty/);
+  assert.match(sitemap, /<loc>https:\/\/esenciahair\.co\.nz\/nanoplasty<\/loc>/);
+  assert.match(sitemap, /<loc>https:\/\/esenciahair\.co\.nz\/hair-extensions<\/loc>/);
   assert.doesNotMatch(sitemap, /\.html<\/loc>/);
   assert.equal(existsSync(path.join(root, "dist", "_headers")), true);
   assert.equal(existsSync(path.join(root, "dist", "robots.txt")), true);
