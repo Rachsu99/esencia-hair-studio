@@ -86,7 +86,7 @@ test("keeps the enquiry flow honest and accessible", async () => {
   const home = await readFile(path.join(root, "index.html"), "utf8");
   const contact = await readFile(path.join(root, "contact.html"), "utf8");
   const gallery = await readFile(path.join(root, "gallery.html"), "utf8");
-  assert.match(home, /assets\/images\/brand\/Rachell\.png/);
+  assert.match(home, /assets\/images\/studio\/rachel-hero\.webp/);
   assert.doesNotMatch(home, /rachel-sticker/);
   assert.doesNotMatch(home, /hero-photo--detail/);
   assert.doesNotMatch(contact, /contact-hero__flower|contact-flower\.webp/);

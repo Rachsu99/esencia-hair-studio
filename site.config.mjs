@@ -99,8 +99,8 @@ export const services = [
     suit: "A consultation is essential to match colour, length, density and the most suitable application method.",
     startingPrice: "Price on Consultation",
     image: "assets/images/studio/tape-extensions.webp",
-    width: 900,
-    height: 1944,
+    width: 947,
+    height: 1260,
     alt: "Long blonde tape-in extensions with a seamless finish",
     benefits: ["Tailored colour match", "Natural-looking placement", "Method chosen for your hair", "Consultation-led plan"],
     prices: [
@@ -123,8 +123,8 @@ export const services = [
     suit: "Ideal when you are ready for a refresh, reapplication or a break from extensions.",
     startingPrice: "from $60",
     image: "assets/images/studio/k-tip-application.webp",
-    width: 900,
-    height: 1944,
+    width: 947,
+    height: 1668,
     alt: "Rachel carefully applying a K-Tip extension",
     benefits: ["Careful technique", "Natural hair considered", "Ready for your next appointment"],
     prices: [
@@ -179,8 +179,8 @@ export const galleryImages = [
   ["assets/images/studio/dark-curls.webp", 1080, 1338, "Defined dark curls", "Nanoplasty"],
   ["assets/images/studio/half-up-style.webp", 1080, 1342, "Half-up styling with a floral clip", "Styling"],
   ["assets/images/studio/blonde-dimension.webp", 1080, 1340, "Dimensional blonde waves", "Colour & Styling"],
-  ["assets/images/studio/soft-blonde-waves.webp", 900, 1944, "Soft blonde waves", "Extensions"],
+  ["assets/images/studio/soft-blonde-waves.webp", 947, 1674, "Soft blonde waves", "Extensions"],
   ["assets/images/studio/highlighted-waves.webp", 1080, 1343, "Highlighted brunette waves", "Extensions"],
-  ["assets/images/studio/tape-extensions-styled.webp", 900, 1944, "Styled tape-in extensions", "Tape Extensions"],
-  ["assets/images/studio/k-tip-extensions.webp", 900, 1944, "K-Tip extension result", "K-Tip Extensions"],
+  ["assets/images/studio/tape-extensions-styled.webp", 947, 1685, "Styled tape-in extensions", "Tape Extensions"],
+  ["assets/images/studio/k-tip-extensions.webp", 947, 1677, "K-Tip extension result", "K-Tip Extensions"],
 ];
