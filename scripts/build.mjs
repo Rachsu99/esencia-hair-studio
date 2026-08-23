@@ -124,7 +124,7 @@ function layout({ file, active, title, description, content, socialImage = "asse
     "<head>",
     '<meta charset="utf-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1">',
-    '<meta name="theme-color" content="#faf7f3">',
+    '<meta name="theme-color" content="#fbf8f3">',
     "<title>" + escapeHtml(title) + "</title>",
     '<meta name="description" content="' + escapeHtml(description) + '">',
     '<meta name="robots" content="' + (indexable ? "index,follow" : "noindex,follow") + '">',
@@ -322,7 +322,7 @@ function homePage() {
   return [
     '<section class="home-hero"><div class="shell home-hero__grid">',
     '<div class="home-hero__copy"><p class="eyebrow">Boutique hair studio · Personalised care</p><h1>Beautiful hair.<br><em>Effortlessly you.</em></h1><p class="home-hero__lead">A personal studio experience for considered cuts, seamless extensions, smoother texture and healthy-looking, beautifully wearable hair.</p><div class="button-row"><a class="button" href="book.html">Book your appointment</a><a class="text-link" href="services.html">Explore treatments →</a></div><div class="home-hero__meta"><span>01</span><p>Haircuts · Extensions · Smoothing<br>Personal consultations</p></div></div>',
-    '<div class="home-hero__visual"><figure class="hero-photo hero-photo--main"><img src="assets/images/studio/rachel-hero.webp" width="1200" height="1600" alt="Rachel, stylist at Esencia Hair Studio" fetchpriority="high" decoding="async"></figure><div class="hero-stamp"><span>Personalised</span><strong>for you</strong></div></div>',
+    '<div class="home-hero__visual"><figure class="hero-photo hero-photo--main"><img src="assets/images/brand/Rachell.png" width="894" height="1191" alt="Rachel, stylist at Esencia Hair Studio" fetchpriority="high" decoding="async"></figure><div class="hero-stamp"><span>Personalised</span><strong>for you</strong></div></div>',
     '</div><div class="marquee" aria-hidden="true"><span>Thoughtful consultations</span><i>✦</i><span>Beautifully wearable results</span><i>✦</i><span>A warm, refined experience</span></div></section>',
     '<section class="story-section"><div class="shell story-grid"><figure class="story-image"><img src="assets/images/studio/bridal-braid.webp" width="1080" height="1331" alt="Floral braided hairstyle" loading="lazy"><figcaption>Personal from the first conversation.</figcaption></figure><div class="story-copy"><p class="eyebrow">Welcome to Esencia</p><h2>Your hair, understood.</h2><p>A personalised hair experience focused on beautiful results, healthy-looking hair and styles designed around you.</p><p>Whether you are refreshing your shape, considering extensions or exploring a smoothing treatment, each appointment is approached with warmth, honesty and attention to detail.</p><a class="text-link" href="about.html">Discover the studio →</a></div></div></section>',
     '<section class="section shell">' + sectionHeading("Services", "Carefully chosen. Beautifully finished.", "A considered collection of hair services, each beginning with a conversation about your hair and the result you want.") + serviceCards() + pricingNoteBlock() + "</section>",

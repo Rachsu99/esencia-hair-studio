@@ -4,7 +4,7 @@ const documentShell = (title: string, body: string) => `<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<meta name="theme-color" content="#2d1c18">
+<meta name="theme-color" content="#624b42">
 <title>${title}</title>
 <link rel="icon" type="image/webp" href="/assets/images/brand/esencia-logo.webp">
 <link rel="stylesheet" href="/css/admin.css?v=20260816c">
