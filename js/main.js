@@ -4,20 +4,50 @@
     element.textContent = currentYear;
   });
 
-  document.querySelectorAll("[data-menu]").forEach((menu) => {
+  const menus = Array.from(document.querySelectorAll("[data-menu]"));
+  const syncMenuState = () => {
+    const isOpen = menus.some((menu) => menu.hasAttribute("open"));
+    document.body.classList.toggle("menu-open", isOpen);
+    menus.forEach((menu) => {
+      const summary = menu.querySelector("summary");
+      summary?.setAttribute("aria-expanded", String(menu.hasAttribute("open")));
+    });
+  };
+
+  menus.forEach((menu) => {
+    menu.addEventListener("toggle", syncMenuState);
     menu.querySelectorAll("a").forEach((link) => {
-      link.addEventListener("click", () => menu.removeAttribute("open"));
+      link.addEventListener("click", () => {
+        menu.removeAttribute("open");
+        syncMenuState();
+      });
     });
     menu.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         menu.removeAttribute("open");
+        syncMenuState();
         menu.querySelector("summary")?.focus();
       }
     });
   });
+  document.addEventListener("pointerdown", (event) => {
+    menus.forEach((menu) => {
+      if (menu.hasAttribute("open") && !menu.contains(event.target)) menu.removeAttribute("open");
+    });
+    syncMenuState();
+  }, { passive: true });
+  const desktopQuery = window.matchMedia("(min-width: 1051px)");
+  desktopQuery.addEventListener("change", (event) => {
+    if (!event.matches) return;
+    menus.forEach((menu) => menu.removeAttribute("open"));
+    syncMenuState();
+  });
+  syncMenuState();
 
   document.querySelectorAll("[data-date-input]").forEach((input) => {
-    input.min = new Date().toISOString().slice(0, 10);
+    const localDate = new Date();
+    localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
+    input.min = localDate.toISOString().slice(0, 10);
   });
 
   const form = document.querySelector("[data-enquiry-form]");
@@ -64,24 +94,60 @@
     const image = lightbox.querySelector("[data-lightbox-image]");
     const caption = lightbox.querySelector("[data-lightbox-caption]");
     const closeButton = lightbox.querySelector("[data-lightbox-close]");
+    const previousButton = lightbox.querySelector("[data-lightbox-previous]");
+    const nextButton = lightbox.querySelector("[data-lightbox-next]");
+    const galleryButtons = Array.from(document.querySelectorAll("[data-gallery-image]"));
+    let activeIndex = 0;
+    let activeTrigger = null;
 
-    document.querySelectorAll("[data-gallery-image]").forEach((button) => {
+    const showImage = (index) => {
+      activeIndex = (index + galleryButtons.length) % galleryButtons.length;
+      const button = galleryButtons[activeIndex];
+      if (!button) return;
+      if (image instanceof HTMLImageElement) {
+        image.src = button.dataset.galleryImage || "";
+        image.width = Number(button.dataset.galleryWidth) || 1080;
+        image.height = Number(button.dataset.galleryHeight) || 1331;
+        image.alt = button.dataset.galleryAlt || "";
+      }
+      if (caption instanceof HTMLElement) {
+        const category = button.dataset.galleryCaption || "Gallery image";
+        caption.textContent = `${activeIndex + 1} of ${galleryButtons.length} · ${category}`;
+      }
+    };
+
+    galleryButtons.forEach((button, index) => {
       button.addEventListener("click", () => {
-        if (image instanceof HTMLImageElement) {
-          image.src = button.dataset.galleryImage || "";
-          image.alt = button.dataset.galleryAlt || "";
-        }
-        if (caption instanceof HTMLElement) {
-          caption.textContent = button.dataset.galleryCaption || "";
-        }
+        activeTrigger = button;
+        showImage(index);
         lightbox.showModal();
         closeButton?.focus();
       });
     });
 
     closeButton?.addEventListener("click", () => lightbox.close());
+    previousButton?.addEventListener("click", () => showImage(activeIndex - 1));
+    nextButton?.addEventListener("click", () => showImage(activeIndex + 1));
+    lightbox.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        lightbox.close();
+        return;
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        showImage(activeIndex - 1);
+      }
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        showImage(activeIndex + 1);
+      }
+    });
     lightbox.addEventListener("click", (event) => {
       if (event.target === lightbox) lightbox.close();
+    });
+    lightbox.addEventListener("close", () => {
+      if (activeTrigger instanceof HTMLElement) activeTrigger.focus();
     });
   }
 })();

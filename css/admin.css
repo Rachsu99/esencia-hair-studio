@@ -23,6 +23,7 @@
   --taupe: var(--color-text-muted);
   --line: var(--color-border);
   --success: var(--color-success);
+  --motion-fast: 160ms ease;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--espresso);
   background: var(--ivory);
@@ -34,6 +35,7 @@ button, input, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 a { color: inherit; }
 [hidden] { display: none !important; }
+:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 3px; }
 
 .admin-eyebrow {
   margin: 0 0 10px;
@@ -207,5 +209,5 @@ a { color: inherit; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .admin-button, .admin-sidebar button { transition: background-color .18s ease, color .18s ease, opacity .18s ease; }
+  .admin-button, .admin-sidebar button { transition: background-color var(--motion-fast), color var(--motion-fast), opacity var(--motion-fast); }
 }

@@ -65,8 +65,14 @@ function mergeContent(raw: Partial<SiteContent>): SiteContent {
       return [slug, { ...fallback, ...stored, slug, prices: stored.prices }];
     })
   ) as Record<string, ServiceContent>;
-  // Nanoplasty is a current public service. This migration makes an older hidden setting visible.
-  if (services.nanoplasty) services.nanoplasty.visible = true;
+  // These services are retained for future reactivation but are not currently offered publicly.
+  if (services.keratin) services.keratin.visible = false;
+  if (services.nanoplasty) services.nanoplasty.visible = false;
+
+  const seo = { ...defaults.seo, ...(raw.seo || {}) };
+  seo.homepageTitle = defaults.seo.homepageTitle;
+  seo.metaDescription = defaults.seo.metaDescription;
+  seo.socialDescription = defaults.seo.socialDescription;
 
   const storedGallery = Array.isArray(raw.gallery) ? raw.gallery : [];
   const gallery = defaults.gallery.map((fallback) => {
@@ -79,7 +85,7 @@ function mergeContent(raw: Partial<SiteContent>): SiteContent {
     services,
     gallery,
     contact: { ...defaults.contact, ...(raw.contact || {}) },
-    seo: { ...defaults.seo, ...(raw.seo || {}) },
+    seo,
     updatedAt: raw.updatedAt || defaults.updatedAt,
   };
 }
@@ -436,8 +442,11 @@ function publicRewriter(content: SiteContent, pathname: string): HTMLRewriter {
         const structuredData: Record<string, unknown> = {
           "@context": "https://schema.org",
           "@type": "HairSalon",
+          "@id": `${content.seo.canonicalDomain}/#hair-salon`,
           name: content.seo.businessName,
           url: content.seo.canonicalDomain,
+          logo: `${content.seo.canonicalDomain}/assets/images/brand/esencia-logo.webp`,
+          image: `${content.seo.canonicalDomain}${content.seo.defaultOgImage}`,
           email: content.contact.email,
           sameAs: [content.contact.instagram],
           priceRange: "$$",
@@ -560,7 +569,12 @@ async function servePublic(request: Request, env: Env, pathname: string): Promis
   if (content.services[serviceSlug] && !content.services[serviceSlug].visible) {
     const notFoundRequest = new Request(new URL("/404", request.url), request);
     const notFound = await env.ASSETS.fetch(notFoundRequest);
-    return withHeaders(new Response(notFound.body, { status: 404, headers: notFound.headers }));
+    const transformedNotFound = publicRewriter(content, "/404").transform(notFound);
+    const hiddenHeaders = new Headers(transformedNotFound.headers);
+    hiddenHeaders.set("Cache-Control", "no-store");
+    hiddenHeaders.delete("ETag");
+    hiddenHeaders.delete("Last-Modified");
+    return withHeaders(new Response(transformedNotFound.body, { status: 404, headers: hiddenHeaders }));
   }
   const assetHeaders = new Headers(request.headers);
   assetHeaders.delete("If-None-Match");

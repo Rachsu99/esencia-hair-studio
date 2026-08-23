@@ -18,6 +18,7 @@
       event.preventDefault();
       const button = loginForm.querySelector("button[type=submit]");
       const fields = new FormData(loginForm);
+      loginForm.setAttribute("aria-busy", "true");
       if (button instanceof HTMLButtonElement) button.disabled = true;
       if (message instanceof HTMLElement) { message.textContent = "Signing in…"; message.dataset.state = ""; }
       try {
@@ -30,6 +31,10 @@
       } catch (error) {
         if (message instanceof HTMLElement) message.textContent = error instanceof Error ? error.message : "Sign in failed.";
         if (button instanceof HTMLButtonElement) button.disabled = false;
+        const username = loginForm.querySelector('[name="username"]');
+        if (username instanceof HTMLInputElement) username.focus();
+      } finally {
+        loginForm.removeAttribute("aria-busy");
       }
     });
     return;
@@ -166,6 +171,8 @@
         image.src = `/${item.image}`;
         image.alt = "";
         image.loading = "lazy";
+        image.width = 125;
+        image.height = 165;
         const controls = document.createElement("div");
         const head = document.createElement("div");
         head.className = "admin-editor-card__head";
@@ -232,12 +239,14 @@
       dashboard.querySelectorAll("[data-panel]").forEach((panel) => { panel.hidden = panel.getAttribute("data-panel") !== section; });
       const heading = dashboard.querySelector("[data-admin-heading]");
       if (heading instanceof HTMLElement) heading.textContent = button.textContent || "Dashboard";
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
     });
   });
 
   if (saveButton instanceof HTMLButtonElement) {
     saveButton.addEventListener("click", async () => {
+      dashboard.setAttribute("aria-busy", "true");
       saveButton.disabled = true;
       announce("Saving approved changes…");
       try {
@@ -252,7 +261,10 @@
         announce("Changes saved. Public pages now use the approved content.", true);
       } catch (error) {
         announce(error instanceof Error ? error.message : "Changes could not be saved.");
-      } finally { saveButton.disabled = false; }
+      } finally {
+        saveButton.disabled = false;
+        dashboard.removeAttribute("aria-busy");
+      }
     });
   }
 

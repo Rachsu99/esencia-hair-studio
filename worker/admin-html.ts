@@ -7,8 +7,8 @@ const documentShell = (title: string, body: string) => `<!doctype html>
 <meta name="theme-color" content="#624b42">
 <title>${title}</title>
 <link rel="icon" type="image/webp" href="/assets/images/brand/esencia-logo.webp">
-<link rel="stylesheet" href="/css/admin.css?v=20260816c">
-<script src="/js/admin.js?v=20260816" defer></script>
+<link rel="stylesheet" href="/css/admin.css?v=20260823a">
+<script src="/js/admin.js?v=20260823a" defer></script>
 </head>
 <body class="admin-body">${body}</body>
 </html>`;

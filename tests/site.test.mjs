@@ -53,8 +53,8 @@ test("keeps confirmed business details and pricing correct", async () => {
       [["Short Hair", "from $180"], ["Medium Hair", "from $230"], ["Long Hair", "from $280"], ["Extra Long / Thick Hair", "from $330"]],
       [["Short Hair", "from $280"], ["Medium Hair", "from $340"], ["Long Hair", "from $400"], ["Extra Long / Thick Hair", "from $550"]],
       [["Tape Extensions", "Price on Consultation"], ["K-Tip Extensions", "Price on Consultation"]],
-      [["Tape Removal", "from $60"], ["K-Tip Removal", "from $100"]],
-      [["Shampoo & Blow Wave", "$55"], ["Curls / Styling", "$45"]],
+      [["Tape Extension Removal", "from $60"], ["K-Tip Extension Removal", "from $100"]],
+      [["Shampoo & Blow-Dry", "$55"], ["Dry Style – Curls & Waves", "$45"]],
     ]
   );
   for (const page of pages) {
@@ -97,25 +97,29 @@ test("keeps the enquiry flow honest and accessible", async () => {
   assert.match(gallery, /<dialog class="lightbox"/);
   assert.match(gallery, /data-lightbox-close/);
   assert.equal(existsSync(path.join(root, "nanoplasty.html")), true);
+  assert.equal(services.find((service) => service.slug === "keratin")?.visible, false);
+  assert.equal(services.find((service) => service.slug === "nanoplasty")?.visible, false);
+  assert.match(home, /data-service="keratin" hidden/);
   assert.match(home, /data-service="nanoplasty"/);
-  assert.doesNotMatch(home, /data-service="nanoplasty" hidden/);
+  assert.match(home, /data-service="nanoplasty" hidden/);
 });
 
-test("publishes the requested Keratin and extension information", async () => {
+test("retains hidden Keratin aftercare and publishes extension information", async () => {
   const keratin = await readFile(path.join(root, "keratin.html"), "utf8");
   const extensions = await readFile(path.join(root, "hair-extensions.html"), "utf8");
   const removal = await readFile(path.join(root, "extension-removal.html"), "utf8");
   const styling = await readFile(path.join(root, "styling.html"), "utf8");
 
   assert.match(keratin, /avoid washing your hair for 48 hours/i);
-  assert.match(keratin, /sulfate-free shampoo and conditioner/i);
+  assert.match(keratin, /complimentary shampoo & conditioner/i);
   assert.match(keratin, /Results can last up to 3 months/i);
   assert.match(keratin, /Ready for smoother, more manageable hair/i);
   assert.match(extensions, /Tape Extensions/);
   assert.match(extensions, /K-Tip Extensions/);
   assert.match(extensions, /Price on Consultation/);
-  assert.match(removal, /Tape Removal/);
-  assert.match(removal, /K-Tip Removal/);
+  assert.match(extensions, /assets\/images\/studio\/tape-in-extensions-1\.webp/);
+  assert.match(removal, /Tape Extension Removal/);
+  assert.match(removal, /K-Tip Extension Removal/);
   assert.match(styling, /Extra Long \/ Thick Hair — \+\$10/);
 });
 
@@ -143,7 +147,8 @@ test("emits production domain metadata and Cloudflare deployment files", async (
   assert.match(keratin, /og:image" content="https:\/\/esenciahair\.co\.nz\/assets\/images\/studio\/glossy-brunette\.webp"/);
   assert.match(notFound, /noindex,follow/);
   assert.match(sitemap, /<loc>https:\/\/esenciahair\.co\.nz\/services<\/loc>/);
-  assert.match(sitemap, /<loc>https:\/\/esenciahair\.co\.nz\/nanoplasty<\/loc>/);
+  assert.doesNotMatch(sitemap, /<loc>https:\/\/esenciahair\.co\.nz\/keratin<\/loc>/);
+  assert.doesNotMatch(sitemap, /<loc>https:\/\/esenciahair\.co\.nz\/nanoplasty<\/loc>/);
   assert.match(sitemap, /<loc>https:\/\/esenciahair\.co\.nz\/hair-extensions<\/loc>/);
   assert.doesNotMatch(sitemap, /\.html<\/loc>/);
   assert.equal(existsSync(path.join(root, "dist", "_headers")), true);

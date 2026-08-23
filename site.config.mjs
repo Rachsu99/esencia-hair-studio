@@ -38,7 +38,7 @@ export const services = [
   },
   {
     slug: "keratin",
-    visible: true,
+    visible: false,
     file: "keratin.html",
     name: "Keratin Smoothing",
     eyebrow: "Smooth · soft · manageable",
@@ -48,7 +48,7 @@ export const services = [
     startingPrice: "from $180",
     image: "assets/images/studio/glossy-brunette.webp",
     width: 1080,
-    height: 1319,
+    height: 1320,
     alt: "Glossy brunette hair after a smoothing service",
     benefits: [
       "Reduces frizz and flyaways",
@@ -68,7 +68,7 @@ export const services = [
   },
   {
     slug: "nanoplasty",
-    visible: true,
+    visible: false,
     file: "nanoplasty.html",
     name: "Nanoplasty",
     eyebrow: "Sleek · glossy · refined",
@@ -98,10 +98,10 @@ export const services = [
     intro: "Hair extensions are a personalised service. Rachel will assess your natural hair, desired result and the best extension method for a seamless, comfortable finish.",
     suit: "A consultation is essential to match colour, length, density and the most suitable application method.",
     startingPrice: "Price on Consultation",
-    image: "assets/images/studio/tape-extensions.webp",
-    width: 947,
-    height: 1260,
-    alt: "Long blonde tape-in extensions with a seamless finish",
+    image: "assets/images/studio/tape-in-extensions-1.webp",
+    width: 1080,
+    height: 1878,
+    alt: "Long blonde tape-in extensions styled in soft waves",
     benefits: ["Tailored colour match", "Natural-looking placement", "Method chosen for your hair", "Consultation-led plan"],
     prices: [
       ["Tape Extensions", "Price on Consultation"],
@@ -128,8 +128,8 @@ export const services = [
     alt: "Rachel carefully applying a K-Tip extension",
     benefits: ["Careful technique", "Natural hair considered", "Ready for your next appointment"],
     prices: [
-      ["Tape Removal", "from $60"],
-      ["K-Tip Removal", "from $100"],
+      ["Tape Extension Removal", "from $60"],
+      ["K-Tip Extension Removal", "from $100"],
     ],
     priceDescriptions: [
       "Safe, professional removal to protect your natural hair and avoid unnecessary damage.",
@@ -149,15 +149,15 @@ export const services = [
     startingPrice: "from $45",
     image: "assets/images/studio/half-up-style.webp",
     width: 1080,
-    height: 1342,
+    height: 1340,
     alt: "Soft half-up hairstyle with a floral clip",
     benefits: ["Personalised finish", "Soft movement or polished shape", "Occasion-ready styling"],
     prices: [
-      ["Shampoo & Blow Wave", "$55"],
-      ["Curls / Styling", "$45"],
+      ["Shampoo & Blow-Dry", "$55"],
+      ["Dry Style – Curls & Waves", "$45"],
     ],
     priceDescriptions: [
-      "Includes shampoo, relaxing scalp massage, and blow wave for a smooth, polished finish.",
+      "Includes shampoo, relaxing scalp massage, and a blow-dry for a smooth, polished finish.",
       "Soft waves, bouncy curls, or a styled look for any occasion.",
     ],
     extraNote: "Extra Long / Thick Hair — +$10",
@@ -173,14 +173,14 @@ export const treatmentFaqs = [
 ];
 
 export const galleryImages = [
-  ["assets/images/studio/bridal-braid.webp", 1080, 1331, "Floral braided hairstyle", "Styling"],
+  ["assets/images/studio/bridal-braid.webp", 1080, 1332, "Floral braided hairstyle", "Styling"],
   ["assets/images/studio/brunette-waves.webp", 1080, 1322, "Soft brunette waves", "Haircuts"],
-  ["assets/images/studio/glossy-brunette.webp", 1080, 1319, "Long glossy brunette curls", "Keratin Smoothing"],
+  ["assets/images/studio/glossy-brunette.webp", 1080, 1320, "Long glossy brunette curls", "Keratin Smoothing"],
   ["assets/images/studio/dark-curls.webp", 1080, 1338, "Defined dark curls", "Nanoplasty"],
-  ["assets/images/studio/half-up-style.webp", 1080, 1342, "Half-up styling with a floral clip", "Styling"],
-  ["assets/images/studio/blonde-dimension.webp", 1080, 1340, "Dimensional blonde waves", "Colour & Styling"],
+  ["assets/images/studio/half-up-style.webp", 1080, 1340, "Half-up styling with a floral clip", "Styling"],
+  ["assets/images/studio/blonde-dimension.webp", 1080, 1338, "Dimensional blonde waves", "Colour & Styling"],
   ["assets/images/studio/soft-blonde-waves.webp", 947, 1674, "Soft blonde waves", "Extensions"],
-  ["assets/images/studio/highlighted-waves.webp", 1080, 1343, "Highlighted brunette waves", "Extensions"],
+  ["assets/images/studio/highlighted-waves.webp", 1080, 1344, "Highlighted brunette waves", "Extensions"],
   ["assets/images/studio/tape-extensions-styled.webp", 947, 1685, "Styled tape-in extensions", "Tape Extensions"],
   ["assets/images/studio/k-tip-extensions.webp", 947, 1677, "K-Tip extension result", "K-Tip Extensions"],
 ];
