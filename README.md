@@ -70,15 +70,17 @@ and check that admin routes and credential names do not leak into public HTML.
 
 ## Website content
 
-Confirmed defaults are in `site.config.mjs`. The main email is
-`Rachsu99@gmail.com`, and the official Instagram account is
-`@hairbyrachel.nz`. The public enquiry form prepares a message in the visitor’s
-email application; it does not submit customer data to this Worker.
+Confirmed defaults are in `site.config.mjs`. General enquiries use
+`Hello@esenciahair.co.nz`, appointment enquiries use
+`Bookings@esenciahair.co.nz`, and the official Instagram account is
+`@hairbyrachel.nz`. The public enquiry form prepares a message to the bookings
+address in the visitor’s email application; it does not submit customer data to
+this Worker.
 
 At runtime, approved service copy, prices, visibility, existing gallery items,
-contact details and homepage SEO can be edited at `/admin`. Nanoplasty remains
-hidden by default and is excluded from public navigation, content, direct
-routes and the generated sitemap until enabled by an authenticated admin.
+contact details and homepage SEO can be edited at `/admin`. Keratin is publicly
+available. Nanoplasty remains hidden and is excluded from public navigation,
+content, direct routes and the generated sitemap.
 
 The optional phone, address, hours and external booking link remain blank until
 real business details are approved. Existing gallery images can be edited or

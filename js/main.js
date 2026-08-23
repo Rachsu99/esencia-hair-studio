@@ -80,7 +80,7 @@
       const emailLink = form.querySelector('a[href^="mailto:"]');
       const recipient = emailLink instanceof HTMLAnchorElement
         ? emailLink.href.replace(/^mailto:/i, "").split("?")[0]
-        : "Rachsu99@gmail.com";
+        : "Bookings@esenciahair.co.nz";
       window.location.href =
         "mailto:" + recipient + "?subject=" +
         encodeURIComponent(subject) +

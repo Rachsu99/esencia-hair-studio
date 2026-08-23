@@ -44,7 +44,8 @@ test("builds a complete static multi-page website", async () => {
 });
 
 test("keeps confirmed business details and pricing correct", async () => {
-  assert.equal(site.email, "Rachsu99@gmail.com");
+  assert.equal(site.email, "Hello@esenciahair.co.nz");
+  assert.equal(site.bookingsEmail, "Bookings@esenciahair.co.nz");
   assert.match(site.instagram, /instagram\.com\/hairbyrachel\.nz/);
   assert.deepEqual(
     services.map((service) => service.prices),
@@ -59,7 +60,9 @@ test("keeps confirmed business details and pricing correct", async () => {
   );
   for (const page of pages) {
     const html = await readFile(path.join(root, page), "utf8");
-    assert.match(html, /Rachsu99@gmail\.com/);
+    assert.match(html, /Hello@esenciahair\.co\.nz/);
+    if (page !== "404.html") assert.match(html, /Bookings@esenciahair\.co\.nz/);
+    assert.doesNotMatch(html, /Rachsu99@gmail\.com/i);
     assert.match(html, /instagram\.com\/hairbyrachel\.nz/);
   }
 });
@@ -97,21 +100,24 @@ test("keeps the enquiry flow honest and accessible", async () => {
   assert.match(gallery, /<dialog class="lightbox"/);
   assert.match(gallery, /data-lightbox-close/);
   assert.equal(existsSync(path.join(root, "nanoplasty.html")), true);
-  assert.equal(services.find((service) => service.slug === "keratin")?.visible, false);
+  assert.equal(services.find((service) => service.slug === "keratin")?.visible, true);
   assert.equal(services.find((service) => service.slug === "nanoplasty")?.visible, false);
-  assert.match(home, /data-service="keratin" hidden/);
+  assert.match(home, /data-service="keratin"/);
+  assert.doesNotMatch(home, /data-service="keratin" hidden/);
   assert.match(home, /data-service="nanoplasty"/);
   assert.match(home, /data-service="nanoplasty" hidden/);
 });
 
-test("retains hidden Keratin aftercare and publishes extension information", async () => {
+test("publishes Keratin aftercare and extension information", async () => {
   const keratin = await readFile(path.join(root, "keratin.html"), "utf8");
   const extensions = await readFile(path.join(root, "hair-extensions.html"), "utf8");
   const removal = await readFile(path.join(root, "extension-removal.html"), "utf8");
   const styling = await readFile(path.join(root, "styling.html"), "utf8");
 
   assert.match(keratin, /avoid washing your hair for 48 hours/i);
-  assert.match(keratin, /complimentary shampoo & conditioner/i);
+  assert.match(keratin, /complimentary shampoo and conditioner/i);
+  assert.match(keratin, /StraightOut/i);
+  assert.match(keratin, /formaldehyde-free/i);
   assert.match(keratin, /Results can last up to 3 months/i);
   assert.match(keratin, /Ready for smoother, more manageable hair/i);
   assert.match(extensions, /Tape Extensions/);
@@ -147,10 +153,26 @@ test("emits production domain metadata and Cloudflare deployment files", async (
   assert.match(keratin, /og:image" content="https:\/\/esenciahair\.co\.nz\/assets\/images\/studio\/glossy-brunette\.webp"/);
   assert.match(notFound, /noindex,follow/);
   assert.match(sitemap, /<loc>https:\/\/esenciahair\.co\.nz\/services<\/loc>/);
-  assert.doesNotMatch(sitemap, /<loc>https:\/\/esenciahair\.co\.nz\/keratin<\/loc>/);
+  assert.match(sitemap, /<loc>https:\/\/esenciahair\.co\.nz\/keratin<\/loc>/);
   assert.doesNotMatch(sitemap, /<loc>https:\/\/esenciahair\.co\.nz\/nanoplasty<\/loc>/);
   assert.match(sitemap, /<loc>https:\/\/esenciahair\.co\.nz\/hair-extensions<\/loc>/);
   assert.doesNotMatch(sitemap, /\.html<\/loc>/);
   assert.equal(existsSync(path.join(root, "dist", "_headers")), true);
   assert.equal(existsSync(path.join(root, "dist", "robots.txt")), true);
+});
+
+test("routes public general and booking emails deliberately", async () => {
+  const home = await readFile(path.join(root, "index.html"), "utf8");
+  const contact = await readFile(path.join(root, "contact.html"), "utf8");
+  const book = await readFile(path.join(root, "book.html"), "utf8");
+  const keratin = await readFile(path.join(root, "keratin.html"), "utf8");
+
+  assert.match(contact, /mailto:Hello@esenciahair\.co\.nz" data-contact-email="general"/);
+  assert.match(contact, /mailto:Bookings@esenciahair\.co\.nz" data-contact-email="bookings"/);
+  assert.match(book, /mailto:Bookings@esenciahair\.co\.nz" data-contact-email="bookings"/);
+  assert.match(home, /mailto:Hello@esenciahair\.co\.nz" data-contact-email="general"/);
+  assert.match(home, /mailto:Bookings@esenciahair\.co\.nz/);
+  assert.match(keratin, /"@type":"Service"/);
+  assert.match(keratin, /"email":"Hello@esenciahair\.co\.nz"/);
+  assert.doesNotMatch(home + contact + book + keratin, /Rachsu99@gmail\.com/i);
 });

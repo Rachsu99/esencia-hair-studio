@@ -3,13 +3,14 @@ export const site = {
   shortName: "Esencia",
   tagline: "Beautiful hair. Effortlessly you.",
   url: "https://esenciahair.co.nz",
-  email: "Rachsu99@gmail.com",
+  email: "Hello@esenciahair.co.nz",
+  bookingsEmail: "Bookings@esenciahair.co.nz",
   instagram: "https://www.instagram.com/hairbyrachel.nz?igsh=MXNiemsxM3E0N3VucA%3D%3D&utm_source=qr",
   instagramHandle: "@hairbyrachel.nz",
 };
 
 export const pricingNote =
-  "Keratin and Nanoplasty prices are based on hair length, thickness and the amount of product required. Final pricing will be confirmed following consultation.";
+  "Keratin prices are based on hair length, thickness and the amount of product required. Final pricing will be confirmed following consultation.";
 
 export const services = [
   {
@@ -38,12 +39,12 @@ export const services = [
   },
   {
     slug: "keratin",
-    visible: false,
+    visible: true,
     file: "keratin.html",
     name: "Keratin Smoothing",
     eyebrow: "Smooth · soft · manageable",
-    summary: "Keratin smoothing designed to reduce frizz, soften texture and make everyday styling easier.",
-    intro: "Tired of frizzy, unruly hair? Our Keratin Smoothing Treatment is designed to reduce frizz, soften texture, and make everyday styling easier. This professional salon treatment smooths the hair while keeping it soft, natural, and manageable — without making it look flat or overly straight.",
+    summary: "Professional StraightOut formaldehyde-free Keratin smoothing for softer, shinier and more manageable hair.",
+    intro: "Tired of frizzy, unruly hair? Our professional StraightOut Formaldehyde-Free Keratin Treatment is designed to reduce frizz and unwanted volume, soften texture, and make everyday styling easier. It smooths the hair while keeping it soft, natural, and manageable — without making it look flat or overly straight.",
     suit: "Perfect for clients who want less frizz, smoother hair, and a polished finish that still feels like them.",
     startingPrice: "from $180",
     image: "assets/images/studio/glossy-brunette.webp",
@@ -51,13 +52,15 @@ export const services = [
     height: 1320,
     alt: "Glossy brunette hair after a smoothing service",
     benefits: [
-      "Reduces frizz and flyaways",
+      "Reduces frizz and unwanted volume",
       "Makes hair smoother and easier to manage",
       "Helps reduce styling time",
       "Adds softness, shine, and a polished finish",
       "Makes blow-drying and straightening easier",
+      "Formaldehyde-free professional formula",
       "Hair still feels natural and flexible — not stiff or flat",
       "Results can last up to 3 months with the right aftercare",
+      "Complimentary take-home shampoo and conditioner",
     ],
     prices: [
       ["Short Hair", "from $180"],

@@ -65,8 +65,7 @@ function mergeContent(raw: Partial<SiteContent>): SiteContent {
       return [slug, { ...fallback, ...stored, slug, prices: stored.prices }];
     })
   ) as Record<string, ServiceContent>;
-  // These services are retained for future reactivation but are not currently offered publicly.
-  if (services.keratin) services.keratin.visible = false;
+  // Nanoplasty is retained for possible future reactivation but is not currently offered publicly.
   if (services.nanoplasty) services.nanoplasty.visible = false;
 
   const seo = { ...defaults.seo, ...(raw.seo || {}) };
@@ -331,6 +330,8 @@ function validateContent(raw: unknown, current: SiteContent): SiteContent {
   if (value.gallery.length !== current.gallery.length) throw new Error("Invalid gallery payload.");
   const email = plainText(value.contact.email, 254, true);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Invalid email address.");
+  const bookingsEmail = plainText(value.contact.bookingsEmail, 254, true);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingsEmail)) throw new Error("Invalid bookings email address.");
   const ogImage = plainText(value.seo.defaultOgImage, 240, true);
   if (!/^\/assets\/[a-zA-Z0-9_./-]+$/.test(ogImage) || ogImage.includes("..")) throw new Error("Invalid social image path.");
   const canonicalDomain = safeHttpsUrl(value.seo.canonicalDomain, true).replace(/\/$/, "");
@@ -339,6 +340,7 @@ function validateContent(raw: unknown, current: SiteContent): SiteContent {
     gallery: current.gallery.map((fallback, index) => validateGallery(value.gallery?.[index], fallback)),
     contact: {
       email,
+      bookingsEmail,
       phone: plainText(value.contact.phone, 40),
       instagram: safeHttpsUrl(value.contact.instagram, true),
       instagramHandle: plainText(value.contact.instagramHandle, 80, true),
@@ -369,6 +371,8 @@ function getPath(content: SiteContent, path: string): unknown {
 }
 
 function publicRewriter(content: SiteContent, pathname: string): HTMLRewriter {
+  const pageServiceSlug = pathname.replace(/^\//, "").replace(/\.html$/, "").replace(/\/$/, "");
+  const pageService = content.services[pageServiceSlug];
   let rewriter = new HTMLRewriter()
     .on("[data-service]", {
       element(element) {
@@ -385,9 +389,16 @@ function publicRewriter(content: SiteContent, pathname: string): HTMLRewriter {
         if (typeof value === "string") element.setInnerContent(value);
       },
     })
-    .on('a[href^="mailto:"]', {
+    .on('[data-contact-email="general"]', {
       element(element) {
-        element.setAttribute("href", `mailto:${content.contact.email}`);
+        if (element.tagName === "a") element.setAttribute("href", `mailto:${content.contact.email}`);
+        element.setInnerContent(content.contact.email);
+      },
+    })
+    .on('[data-contact-email="bookings"]', {
+      element(element) {
+        if (element.tagName === "a") element.setAttribute("href", `mailto:${content.contact.bookingsEmail}`);
+        element.setInnerContent(content.contact.bookingsEmail);
       },
     })
     .on('a[href*="instagram.com"]', {
@@ -398,11 +409,6 @@ function publicRewriter(content: SiteContent, pathname: string): HTMLRewriter {
     .on('a[href="book.html"]', {
       element(element) {
         if (content.contact.bookingLink) element.setAttribute("href", content.contact.bookingLink);
-      },
-    })
-    .on('[data-contact="email"]', {
-      element(element) {
-        element.setInnerContent(content.contact.email);
       },
     })
     .on('[data-contact="instagram"]', {
@@ -439,8 +445,7 @@ function publicRewriter(content: SiteContent, pathname: string): HTMLRewriter {
     })
     .on('script[type="application/ld+json"]', {
       element(element) {
-        const structuredData: Record<string, unknown> = {
-          "@context": "https://schema.org",
+        const hairSalon: Record<string, unknown> = {
           "@type": "HairSalon",
           "@id": `${content.seo.canonicalDomain}/#hair-salon`,
           name: content.seo.businessName,
@@ -452,9 +457,36 @@ function publicRewriter(content: SiteContent, pathname: string): HTMLRewriter {
           priceRange: "$$",
           description: content.seo.metaDescription,
         };
-        if (content.contact.phone) structuredData.telephone = content.contact.phone;
-        if (content.contact.address) structuredData.address = content.contact.address;
-        if (content.contact.openingHours) structuredData.openingHours = content.contact.openingHours;
+        if (content.contact.phone) hairSalon.telephone = content.contact.phone;
+        if (content.contact.address) hairSalon.address = content.contact.address;
+        if (content.contact.openingHours) hairSalon.openingHours = content.contact.openingHours;
+        const structuredData = pageService?.visible
+          ? {
+              "@context": "https://schema.org",
+              "@graph": [
+                hairSalon,
+                {
+                  "@type": "Service",
+                  "@id": `${content.seo.canonicalDomain}/${pageServiceSlug}#service`,
+                  name: pageService.name,
+                  serviceType: pageService.name,
+                  description: pageService.description,
+                  url: `${content.seo.canonicalDomain}/${pageServiceSlug}`,
+                  provider: { "@id": `${content.seo.canonicalDomain}/#hair-salon` },
+                  offers: pageService.prices.map((item) => {
+                    const numericPrice = item.price.match(/\$([0-9]+)/)?.[1];
+                    return {
+                      "@type": "Offer",
+                      name: item.label,
+                      priceCurrency: "NZD",
+                      ...(numericPrice ? { price: numericPrice } : {}),
+                      description: item.price,
+                    };
+                  }),
+                },
+              ],
+            }
+          : { "@context": "https://schema.org", ...hairSalon };
         const safeJson = JSON.stringify(structuredData).replaceAll("<", "\\u003c");
         element.setInnerContent(safeJson, { html: true });
       },

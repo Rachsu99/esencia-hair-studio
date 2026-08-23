@@ -487,6 +487,11 @@ em { font-weight: 400; color: var(--rose); }
 }
 
 @media (max-width: 480px) {
+  h1 { font-size: clamp(2.8rem, 14vw, 4rem); overflow-wrap: anywhere; }
+  .home-hero h1 { font-size: clamp(3.1rem, 15vw, 4.4rem); }
+  .page-hero h1 { font-size: clamp(3rem, 15vw, 4.4rem); }
+  .simple-hero h1 { font-size: clamp(3rem, 15vw, 4.4rem); }
+  .announcement { font-size: .5rem; letter-spacing: .09em; white-space: nowrap; }
   .button-row { align-items: stretch; flex-direction: column; gap: 16px; }
   .button-row .button { width: 100%; }
   .button-row .text-link { align-self: flex-start; }

@@ -83,10 +83,10 @@ function footer() {
   return [
     '<footer class="footer" id="site-footer">',
     '<div class="shell footer__grid">',
-    '<div class="footer__brand">' + brandMark() + '<p>Personalised haircuts, extensions and styling, delivered with care and a refined, wearable finish.</p><a class="text-link" href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">Follow <span data-contact="instagram">' + instagramLabel + " ↗</span></a></div>",
+    '<div class="footer__brand">' + brandMark() + '<p>Personalised haircuts, Keratin smoothing, extensions and styling, delivered with care and a refined, wearable finish.</p><a class="text-link" href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">Follow <span data-contact="instagram">' + instagramLabel + " ↗</span></a></div>",
     '<div><p class="footer__heading">Explore</p><a href="index.html">Home</a><a href="services.html">Services</a><a href="gallery.html">Gallery</a><a href="about.html">About</a></div>',
     '<div><p class="footer__heading">Services</p>' + services.map((service) => '<a href="' + service.file + '"' + serviceAttributes(service) + contentAttribute("services." + service.slug + ".name") + '>' + service.name + '</a>').join("") + '</div>',
-    '<div><p class="footer__heading">Contact</p><a href="mailto:' + site.email + '" data-contact="email">' + site.email + '</a><a href="' + site.instagram + '" target="_blank" rel="noopener noreferrer" data-contact="instagram">' + instagramLabel + ' ↗</a><p data-contact-field="phone" hidden></p><p data-contact-field="address" hidden></p><p data-contact-field="openingHours" hidden></p><p>Location and opening hours are confirmed with your appointment.</p><a class="button button--light button--small" href="book.html">Request appointment</a></div>',
+    '<div><p class="footer__heading">Contact</p><a href="mailto:' + site.email + '" data-contact-email="general">' + site.email + '</a><a href="' + site.instagram + '" target="_blank" rel="noopener noreferrer" data-contact="instagram">' + instagramLabel + ' ↗</a><p data-contact-field="phone" hidden></p><p data-contact-field="address" hidden></p><p data-contact-field="openingHours" hidden></p><p>Location and opening hours are confirmed with your appointment.</p><a class="button button--light button--small" href="book.html">Request appointment</a></div>',
     "</div>",
     '<div class="shell footer__bottom"><span>© <span data-year>' + year + "</span> Esencia Hair Studio. All rights reserved.</span><span>Appointments are arranged directly with Rachel.</span></div>",
     "</footer>",
@@ -94,9 +94,8 @@ function footer() {
   ].join("\n");
 }
 
-function schema() {
-  return JSON.stringify({
-    "@context": "https://schema.org",
+function schema(active) {
+  const hairSalon = {
     "@type": "HairSalon",
     "@id": site.url + "/#hair-salon",
     name: site.name,
@@ -106,8 +105,37 @@ function schema() {
     email: site.email,
     sameAs: [site.instagram],
     priceRange: "$$",
-    description: "Boutique hair studio offering personalised ladies haircuts, extensions and styling.",
-  }).replaceAll("<", "\\u003c");
+    description: "Boutique hair studio offering personalised ladies haircuts, formaldehyde-free Keratin smoothing, extensions and styling.",
+  };
+  const service = services.find((item) => item.slug === active && item.visible !== false);
+  const structuredData = service
+    ? {
+        "@context": "https://schema.org",
+        "@graph": [
+          hairSalon,
+          {
+            "@type": "Service",
+            "@id": site.url + "/" + service.slug + "#service",
+            name: service.name,
+            serviceType: service.name,
+            description: service.intro,
+            url: site.url + "/" + service.slug,
+            provider: { "@id": site.url + "/#hair-salon" },
+            offers: service.prices.map(([label, price]) => {
+              const numericPrice = price.match(/\$([0-9]+)/)?.[1];
+              return {
+                "@type": "Offer",
+                name: label,
+                priceCurrency: "NZD",
+                ...(numericPrice ? { price: numericPrice } : {}),
+                description: price,
+              };
+            }),
+          },
+        ],
+      }
+    : { "@context": "https://schema.org", ...hairSalon };
+  return JSON.stringify(structuredData).replaceAll("<", "\\u003c");
 }
 
 function layout({ file, active, title, description, content, socialImage = "assets/images/brand/esencia-social-share.jpg", indexable = true }) {
@@ -153,7 +181,7 @@ function layout({ file, active, title, description, content, socialImage = "asse
     heroPreload,
     '<link rel="preload" href="css/style.css?v=' + cssVersion + '" as="style">',
     '<link rel="stylesheet" href="css/style.css?v=' + cssVersion + '">',
-    '<script type="application/ld+json">' + schema() + "</script>",
+    '<script type="application/ld+json">' + schema(active) + "</script>",
     '<script src="js/main.js" defer></script>',
     "</head>",
     "<body>",
@@ -278,7 +306,7 @@ function faq(items = treatmentFaqs) {
 function cta(title = "Ready for hair that feels more like you?", copy = "Start with a conversation. Rachel will help you choose the service that suits your hair, your routine and the result you want.") {
   return [
     '<section class="cta-section">',
-    '<div class="shell cta-section__inner"><p class="eyebrow">Your next appointment</p><h2>' + title + '</h2><p>' + copy + '</p><div class="button-row button-row--center"><a class="button button--light" href="book.html">Request appointment</a><a class="text-link text-link--light" href="mailto:' + site.email + '">Email <span data-contact="email">' + site.email + "</span> →</a></div></div>",
+    '<div class="shell cta-section__inner"><p class="eyebrow">Your next appointment</p><h2>' + title + '</h2><p>' + copy + '</p><div class="button-row button-row--center"><a class="button button--light" href="book.html">Request appointment</a><a class="text-link text-link--light" href="mailto:' + site.bookingsEmail + '">Email <span data-contact-email="bookings">' + site.bookingsEmail + "</span> →</a></div></div>",
     "</section>",
   ].join("");
 }
@@ -307,7 +335,7 @@ function allPrices() {
 function contactForm() {
   return [
     '<form class="contact-form" id="enquiry" data-enquiry-form>',
-    '<div class="form-intro"><p class="eyebrow">Appointment enquiry</p><h2>Tell Rachel about your hair</h2><p>Complete the details below and we will prepare an email to <span data-contact="email">' + site.email + '</span> in your email app. Nothing is submitted to a server from this website.</p></div>',
+    '<div class="form-intro"><p class="eyebrow">Appointment enquiry</p><h2>Tell Rachel about your hair</h2><p>Complete the details below and we will prepare an email to <span data-contact-email="bookings">' + site.bookingsEmail + '</span> in your email app. Nothing is submitted to a server from this website.</p></div>',
     '<div class="form-grid">',
     '<label>Full name<input name="name" autocomplete="name" required></label>',
     '<label>Phone<input name="phone" type="tel" autocomplete="tel" required></label>',
@@ -317,7 +345,7 @@ function contactForm() {
     '<label>Preferred date<input name="date" type="date" data-date-input></label>',
     '<label class="form-grid__full">Message<textarea name="message" rows="5" placeholder="What would you like help with?" required></textarea></label>',
     "</div>",
-    '<div class="form-actions"><button class="button" type="submit">Prepare email enquiry</button><span>Or email <a href="mailto:' + site.email + '" data-contact="email">' + site.email + "</a></span></div>",
+    '<div class="form-actions"><button class="button" type="submit">Prepare email enquiry</button><span>Or email <a href="mailto:' + site.bookingsEmail + '" data-contact-email="bookings">' + site.bookingsEmail + "</a></span></div>",
     '<div class="form-success" role="status" tabindex="-1" data-form-status hidden><strong>Your enquiry is ready.</strong><p>Your email application should open with the details filled in. Review the message, then press send.</p></div>',
     "</form>",
   ].join("");
@@ -326,6 +354,26 @@ function contactForm() {
 function resultsPanel(wide = false) {
   const images = wide ? publicGalleryImages.slice(2, 5) : publicGalleryImages.slice(5, 8);
   return '<div class="result-placeholder result-placeholder--photos' + (wide ? " result-placeholder--wide" : "") + '" aria-label="A selection of Esencia hair work">' + images.map(([image, width, height, alt], index) => '<figure class="result-placeholder__panel result-placeholder__panel--photo result-placeholder__panel--photo-' + (index + 1) + '"><img src="' + image + '" width="' + width + '" height="' + height + '" alt="' + alt + '" loading="lazy"></figure>').join("") + '<p class="result-placeholder__path"><span>Care</span><i aria-hidden="true">→</i><span>Shape</span><i aria-hidden="true">→</i><span>Finish</span></p></div>';
+}
+
+function keratinSpotlight() {
+  const service = services.find((item) => item.slug === "keratin");
+  return (
+    '<section class="section section--soft keratin-spotlight"' + serviceAttributes(service) + '><div class="shell">' +
+    sectionHeading(
+      "Keratin smoothing",
+      "Smoother. Softer. Easier to manage.",
+      "Professional StraightOut formaldehyde-free Keratin smoothing reduces frizz and unwanted volume while keeping hair soft, natural and flexible.",
+      "center"
+    ) +
+    '<div class="values-grid">' +
+    [
+      ["01", "Less frizz", "A smoother, polished finish that still feels natural."],
+      ["02", "Easier styling", "More manageable hair and less time spent blow-drying or straightening."],
+      ["03", "Beautiful aftercare", "Complimentary take-home shampoo and conditioner are included with your treatment."],
+    ].map(([number, title, copy]) => '<article><span>' + number + '</span><h3>' + title + '</h3><p>' + copy + '</p></article>').join("") +
+    '</div><div class="button-row button-row--center"><a class="button" href="keratin.html">Explore Keratin</a><a class="text-link" href="book.html">Request a consultation →</a></div></div></section>'
+  );
 }
 
 function homePage() {
@@ -339,11 +387,12 @@ function homePage() {
 
   return [
     '<section class="home-hero"><div class="shell home-hero__grid">',
-    '<div class="home-hero__copy"><p class="eyebrow">Boutique hair studio · Personalised care</p><h1>Beautiful hair.<br><em>Effortlessly you.</em></h1><p class="home-hero__lead">A personal studio experience for considered cuts, seamless extensions, polished styling and healthy-looking, beautifully wearable hair.</p><div class="button-row"><a class="button" href="book.html">Book your appointment</a><a class="text-link" href="services.html">Explore services →</a></div><div class="home-hero__meta"><span>01</span><p>Haircuts · Extensions · Styling<br>Personal consultations</p></div></div>',
+    '<div class="home-hero__copy"><p class="eyebrow">Boutique hair studio · Personalised care</p><h1>Beautiful hair.<br><em>Effortlessly you.</em></h1><p class="home-hero__lead">A personal studio experience for considered cuts, formaldehyde-free Keratin smoothing, seamless extensions and polished styling.</p><div class="button-row"><a class="button" href="book.html">Book your appointment</a><a class="text-link" href="services.html">Explore services →</a></div><div class="home-hero__meta"><span>01</span><p>Haircuts · Keratin · Extensions · Styling<br>Personal consultations</p></div></div>',
     '<div class="home-hero__visual"><figure class="hero-photo hero-photo--main"><img src="assets/images/studio/rachel-hero.webp" width="1200" height="1600" alt="Rachel, stylist at Esencia Hair Studio" fetchpriority="high" decoding="async"></figure><div class="hero-stamp"><span>Personalised</span><strong>for you</strong></div></div>',
     '</div><div class="marquee" aria-hidden="true"><span>Thoughtful consultations</span><i>✦</i><span>Beautifully wearable results</span><i>✦</i><span>A warm, refined experience</span></div></section>',
-    '<section class="story-section"><div class="shell story-grid"><figure class="story-image"><img src="assets/images/studio/bridal-braid.webp" width="1080" height="1332" alt="Floral braided hairstyle" loading="lazy"><figcaption>Personal from the first conversation.</figcaption></figure><div class="story-copy"><p class="eyebrow">Welcome to Esencia</p><h2>Your hair, understood.</h2><p>A personalised hair experience focused on beautiful results, healthy-looking hair and styles designed around you.</p><p>Whether you are refreshing your shape, considering extensions or planning a polished style, each appointment is approached with warmth, honesty and attention to detail.</p><a class="text-link" href="about.html">Discover the studio →</a></div></div></section>',
+    '<section class="story-section"><div class="shell story-grid"><figure class="story-image"><img src="assets/images/studio/bridal-braid.webp" width="1080" height="1332" alt="Floral braided hairstyle" loading="lazy"><figcaption>Personal from the first conversation.</figcaption></figure><div class="story-copy"><p class="eyebrow">Welcome to Esencia</p><h2>Your hair, understood.</h2><p>A personalised hair experience focused on beautiful results, healthy-looking hair and styles designed around you.</p><p>Whether you are refreshing your shape, smoothing frizz with Keratin, considering extensions or planning a polished style, each appointment is approached with warmth, honesty and attention to detail.</p><a class="text-link" href="about.html">Discover the studio →</a></div></div></section>',
     '<section class="section shell">' + sectionHeading("Services", "Carefully chosen. Beautifully finished.", "A considered collection of hair services, each beginning with a conversation about your hair and the result you want.") + serviceCards() + pricingNoteBlock() + "</section>",
+    keratinSpotlight(),
     '<section class="section section--soft"' + serviceAttributes(services.find((service) => service.slug === "nanoplasty")) + '><div class="shell">' + sectionHeading("Treatment guide", "Keratin or Nanoplasty?", "Two distinct smoothing services, compared simply. Your consultation is where the right choice becomes clear.") + comparison() + "</div></section>",
     '<section class="results-section"><div class="shell results-grid"><div class="results-copy"><p class="eyebrow">Current work</p><h2>Transformations, without the guesswork.</h2><p>Visit Rachel’s official Instagram for current Esencia cuts, extensions, styling and transformations.</p><a class="button button--outline" href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">See current results ↗</a></div>' + resultsPanel() + "</div></section>",
     '<section class="instagram-section"><div class="shell"><div class="instagram-heading">' + sectionHeading("From the studio", "Follow our transformations.", "Follow Rachel’s official account for current Esencia work, appointment updates and studio inspiration.") + '<a class="button" href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">Follow on Instagram ↗</a></div><div class="instagram-grid">' + instagramTiles + "</div></div></section>",
@@ -354,7 +403,7 @@ function homePage() {
 
 function servicesPage() {
   return [
-    pageHero("Services & pricing", "Beautifully tailored to you.", "Considered cuts, extensions and styling with clear starting prices and a consultation-led approach.", "assets/images/studio/highlighted-waves.webp", 1080, 1344, "Highlighted brunette waves"),
+    pageHero("Services & pricing", "Beautifully tailored to you.", "Considered cuts, formaldehyde-free Keratin smoothing, extensions and styling with clear starting prices and a consultation-led approach.", "assets/images/studio/highlighted-waves.webp", 1080, 1344, "Highlighted brunette waves"),
     '<section class="section shell">' + sectionHeading("The menu", "Services and starting prices.", "Choose a service to see the full experience, benefits and pricing guide.") + allPrices() + pricingNoteBlock() + "</section>",
     '<section class="section section--soft"' + serviceAttributes(services.find((service) => service.slug === "nanoplasty")) + '><div class="shell">' + sectionHeading("Compare treatments", "Smoothing, made simpler.") + comparison() + "</div></section>",
     cta(),
@@ -420,7 +469,7 @@ function keratinPage(service) {
   return [
     pageHero(service.eyebrow, service.name, service.intro, service.image, service.width, service.height, service.alt, true, "services.keratin"),
     '<section class="section shell keratin-intro"><div>' + sectionHeading("Keratin smoothing treatment", "Smoother hair. Softer texture. Easier styling.", service.suit) + '<p>Perfect for clients who want less frizz, smoother hair, and a polished finish that still feels like them.</p></div><ul class="benefit-list">' + service.benefits.map((benefit, index) => '<li><span>0' + (index + 1) + '</span>' + benefit + '</li>').join("") + '</ul></section>',
-    '<section class="section section--soft"><div class="shell keratin-aftercare"><div>' + sectionHeading("Aftercare", "Keep your results looking beautiful.", "For best results, please avoid washing your hair for 48 hours after your Keratin treatment. To help you maintain your smooth, glossy results at home, you’ll receive a complimentary shampoo & conditioner to take home with you after your treatment.") + '</div><figure><img src="assets/images/studio/brunette-waves.webp" width="1080" height="1322" alt="Soft brunette waves" loading="lazy"></figure></div></section>',
+    '<section class="section section--soft"><div class="shell keratin-aftercare"><div>' + sectionHeading("Aftercare", "Keep your results looking beautiful.", "For best results, please avoid washing your hair for 48 hours after your Keratin treatment. To help you maintain your smooth, glossy results at home, you’ll receive a complimentary shampoo and conditioner to take home with you after your treatment.") + '</div><figure><img src="assets/images/studio/brunette-waves.webp" width="1080" height="1322" alt="Soft brunette waves" loading="lazy"></figure></div></section>',
     '<section class="section"><div class="shell price-layout"><div>' + sectionHeading("Pricing", "A clear starting point.", "Keratin prices are based on hair length, thickness and the amount of product required. Final pricing will be confirmed following consultation.") + '</div><div class="price-guide">' + service.prices.map(([label, price], index) => '<div class="price-row"><span class="price-row__number">0' + (index + 1) + '</span><span' + contentAttribute("services.keratin.prices." + index + ".label") + '>' + label + '</span><strong' + contentAttribute("services.keratin.prices." + index + ".price") + '>' + price + '</strong></div>').join("") + '</div></div></section>',
     '<section class="section shell faq-section">' + sectionHeading("Questions", "Keratin smoothing FAQs") + faq(keratinFaqs) + '</section>',
     '<section class="section section--soft"><div class="shell keratin-experience">' + sectionHeading("The Esencia experience", "Gentle. Personalised. Designed around your hair.", "Every Keratin Smoothing Treatment includes a personalised consultation to ensure the treatment is right for your hair type, goals, and lifestyle. You’ll leave with smoother, softer, more manageable hair — and the confidence of knowing how to maintain it.", "center") + '</div></section>',
@@ -468,20 +517,20 @@ function contactPage(isBooking = false) {
     '<section class="' + (isBooking ? "simple-hero shell" : "contact-hero") + '">' +
       (isBooking
         ? '<p class="eyebrow">Book an appointment</p><h1>Let’s begin with your hair.</h1><p>Share a little about what you are considering and Rachel will help you choose the right appointment.</p>'
-        : '<div class="shell contact-hero__grid"><div><p class="eyebrow">Contact & book</p><h1>Let’s talk about your hair.</h1><p>Tell Rachel what you are considering and she’ll help you choose the right appointment.</p></div><div class="contact-details"><div><span>01</span><small>Email</small><a href="mailto:' + site.email + '" data-contact="email">' + site.email + '</a></div><div><span>02</span><small>Instagram</small><a href="' + site.instagram + '" target="_blank" rel="noopener noreferrer" data-contact="instagram">' + instagramLabel + ' ↗</a></div><div><span>03</span><small>Studio details</small><p data-contact-field="phone" hidden></p><p data-contact-field="address" hidden></p><p data-contact-field="openingHours" hidden></p><p>Location and opening hours are confirmed directly with your appointment.</p></div></div></div>') +
+        : '<div class="shell contact-hero__grid"><div><p class="eyebrow">Contact & book</p><h1>Let’s talk about your hair.</h1><p>Tell Rachel what you are considering and she’ll help you choose the right appointment.</p></div><div class="contact-details"><div><span>01</span><small>Email</small><a href="mailto:' + site.email + '" data-contact-email="general">' + site.email + '</a></div><div><span>02</span><small>Instagram</small><a href="' + site.instagram + '" target="_blank" rel="noopener noreferrer" data-contact="instagram">' + instagramLabel + ' ↗</a></div><div><span>03</span><small>Studio details</small><p data-contact-field="phone" hidden></p><p data-contact-field="address" hidden></p><p data-contact-field="openingHours" hidden></p><p>Location and opening hours are confirmed directly with your appointment.</p></div></div></div>') +
       "</section>",
     '<section class="section shell">' + contactForm() + "</section>",
   ].join("\n");
 }
 
 const pages = [
-  ["index.html", "home", "Esencia Hair Studio | Haircuts, Extensions & Styling", "Personalised haircuts, extensions and styling in a warm, refined studio experience.", homePage()],
-  ["services.html", "services", "Services & Pricing | Esencia Hair Studio", "Explore personalised haircuts, extensions and styling services at Esencia Hair Studio.", servicesPage()],
-  ...services.map((service) => [service.file, service.slug, service.name + " | Esencia Hair Studio", "Explore " + service.name + " benefits, pricing and the consultation-led experience at Esencia Hair Studio.", service.slug === "keratin" ? keratinPage(service) : servicePage(service), service.image]),
+  ["index.html", "home", "Esencia Hair Studio | Haircuts, Keratin & Extensions", "Personalised haircuts, formaldehyde-free Keratin smoothing, extensions and styling in a warm, refined studio experience.", homePage()],
+  ["services.html", "services", "Services & Pricing | Esencia Hair Studio", "Explore personalised haircuts, formaldehyde-free Keratin smoothing, extensions and styling at Esencia Hair Studio.", servicesPage()],
+  ...services.map((service) => [service.file, service.slug, service.name + " | Esencia Hair Studio", service.slug === "keratin" ? "Professional StraightOut formaldehyde-free Keratin smoothing, benefits, aftercare and pricing at Esencia Hair Studio." : "Explore " + service.name + " benefits, pricing and the consultation-led experience at Esencia Hair Studio.", service.slug === "keratin" ? keratinPage(service) : servicePage(service), service.image]),
   ["gallery.html", "gallery", "Gallery | Esencia Hair Studio", "Explore the Esencia Hair Studio aesthetic and visit Rachel’s official Instagram account for current client work.", galleryPage()],
   ["about.html", "about", "About | Esencia Hair Studio", "Meet Rachel and discover the warm, personalised philosophy behind Esencia Hair Studio.", aboutPage()],
   ["contact.html", "contact", "Contact & Book | Esencia Hair Studio", "Contact Esencia Hair Studio or prepare an appointment enquiry for Rachel.", contactPage(false)],
-  ["book.html", "book", "Book an Appointment | Esencia Hair Studio", "Prepare an appointment enquiry for haircuts, extensions, styling or a consultation.", contactPage(true)],
+  ["book.html", "book", "Book an Appointment | Esencia Hair Studio", "Prepare an appointment enquiry for haircuts, Keratin smoothing, extensions, styling or a consultation.", contactPage(true)],
 ];
 
 await rm(path.join(root, "dist"), { recursive: true, force: true });
@@ -524,7 +573,7 @@ await cp(path.join(root, "_headers"), path.join(root, "dist", "_headers"));
 const expectedFiles = new Set(pages.map(([file]) => file));
 for (const [file] of pages) {
   const html = await readFile(path.join(root, file), "utf8");
-  if (!html.includes(site.email) || !html.includes(site.instagram)) {
+  if (!html.includes(site.email) || !html.includes(site.bookingsEmail) || !html.includes(site.instagram)) {
     throw new Error(file + " is missing confirmed Esencia contact details.");
   }
   if (html.includes("localhost") || html.includes("http://127.0.0.1")) {

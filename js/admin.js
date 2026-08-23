@@ -195,7 +195,8 @@
     const contactTarget = dashboard.querySelector("[data-contact-editor]");
     if (contactTarget instanceof HTMLElement) {
       contactTarget.replaceChildren(
-        field("Main email", content.contact.email, "contact.email", { required: true, type: "email", maxLength: 254 }),
+        field("General email", content.contact.email, "contact.email", { required: true, type: "email", maxLength: 254 }),
+        field("Bookings email", content.contact.bookingsEmail, "contact.bookingsEmail", { required: true, type: "email", maxLength: 254 }),
         field("Phone (optional)", content.contact.phone, "contact.phone", { type: "tel", maxLength: 40 }),
         field("Instagram URL", content.contact.instagram, "contact.instagram", { required: true, type: "url", maxLength: 500 }),
         field("Instagram handle", content.contact.instagramHandle, "contact.instagramHandle", { required: true, maxLength: 80 }),
