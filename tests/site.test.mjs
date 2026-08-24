@@ -101,11 +101,11 @@ test("keeps the enquiry flow honest and accessible", async () => {
   assert.match(gallery, /data-lightbox-close/);
   assert.equal(existsSync(path.join(root, "nanoplasty.html")), true);
   assert.equal(services.find((service) => service.slug === "keratin")?.visible, true);
-  assert.equal(services.find((service) => service.slug === "nanoplasty")?.visible, false);
+  assert.equal(services.find((service) => service.slug === "nanoplasty")?.visible, true);
   assert.match(home, /data-service="keratin"/);
   assert.doesNotMatch(home, /data-service="keratin" hidden/);
   assert.match(home, /data-service="nanoplasty"/);
-  assert.match(home, /data-service="nanoplasty" hidden/);
+  assert.doesNotMatch(home, /data-service="nanoplasty" hidden/);
 });
 
 test("publishes Keratin aftercare and extension information", async () => {
@@ -154,7 +154,7 @@ test("emits production domain metadata and Cloudflare deployment files", async (
   assert.match(notFound, /noindex,follow/);
   assert.match(sitemap, /<loc>https:\/\/esenciahair\.co\.nz\/services<\/loc>/);
   assert.match(sitemap, /<loc>https:\/\/esenciahair\.co\.nz\/keratin<\/loc>/);
-  assert.doesNotMatch(sitemap, /<loc>https:\/\/esenciahair\.co\.nz\/nanoplasty<\/loc>/);
+  assert.match(sitemap, /<loc>https:\/\/esenciahair\.co\.nz\/nanoplasty<\/loc>/);
   assert.match(sitemap, /<loc>https:\/\/esenciahair\.co\.nz\/hair-extensions<\/loc>/);
   assert.doesNotMatch(sitemap, /\.html<\/loc>/);
   assert.equal(existsSync(path.join(root, "dist", "_headers")), true);

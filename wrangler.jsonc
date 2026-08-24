@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "esencia-hair-studio",
+  "account_id": "9997b3a7d9f144f03c921aaef9c0d53d",
   "compatibility_date": "2026-08-16",
   "main": "./worker/index.ts",
   "secrets": {

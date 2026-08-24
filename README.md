@@ -78,9 +78,9 @@ address in the visitor’s email application; it does not submit customer data t
 this Worker.
 
 At runtime, approved service copy, prices, visibility, existing gallery items,
-contact details and homepage SEO can be edited at `/admin`. Keratin is publicly
-available. Nanoplasty remains hidden and is excluded from public navigation,
-content, direct routes and the generated sitemap.
+contact details and homepage SEO can be edited at `/admin`. Keratin and
+Nanoplasty are publicly available and included in public navigation, content,
+direct routes and the generated sitemap.
 
 The optional phone, address, hours and external booking link remain blank until
 real business details are approved. Existing gallery images can be edited or
@@ -88,9 +88,11 @@ hidden; uploads require a separate, deliberately scoped R2 phase.
 
 ## Cloudflare production setup
 
-Use the Esencia Cloudflare account only. The current local shell may be signed
-into a different Cloudflare account; verify the account ID before every remote
-command. Do not create an Esencia database or Worker in another account.
+Use the Esencia Cloudflare account only. Run `npm run cf:auth` once to store its
+project-specific token in the Git-ignored local `.env`, then use
+`npm run cf:whoami` for remote checks. The project wrapper overrides unrelated
+inherited credentials for its child Wrangler process. Do not create an Esencia
+database or Worker in another account, and do not rely on global Wrangler OAuth.
 
 The Git-connected production build uses:
 
@@ -122,4 +124,5 @@ Worker and provision/use its D1 database. Git-connected builds use their own
 Cloudflare account token; a local Wrangler login does not replace it.
 
 Every push to `main` can trigger production. Review `git diff`, run all checks,
-and confirm the active Cloudflare account before pushing.
+commit the reviewed changes, and run `npm run verify:push` before pushing. Use
+`npm run verify:deploy` before a direct Wrangler deployment.

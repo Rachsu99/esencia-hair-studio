@@ -65,8 +65,6 @@ function mergeContent(raw: Partial<SiteContent>): SiteContent {
       return [slug, { ...fallback, ...stored, slug, prices: stored.prices }];
     })
   ) as Record<string, ServiceContent>;
-  // Nanoplasty is retained for possible future reactivation but is not currently offered publicly.
-  if (services.nanoplasty) services.nanoplasty.visible = false;
 
   const seo = { ...defaults.seo, ...(raw.seo || {}) };
   seo.homepageTitle = defaults.seo.homepageTitle;

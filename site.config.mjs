@@ -71,7 +71,7 @@ export const services = [
   },
   {
     slug: "nanoplasty",
-    visible: false,
+    visible: true,
     file: "nanoplasty.html",
     name: "Nanoplasty",
     eyebrow: "Sleek · glossy · refined",
