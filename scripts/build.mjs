@@ -1,7 +1,7 @@
 import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
-import { galleryImages, services, site, treatmentFaqs } from "../site.config.mjs";
+import { galleryImages, nanoplastyFaqs, services, site, treatmentFaqs } from "../site.config.mjs";
 
 const root = process.cwd();
 const productionUrl = (process.env.SITE_URL || site.url || "").replace(/\/$/, "");
@@ -286,14 +286,15 @@ function faq(items = treatmentFaqs) {
     '<div class="faq-list">' +
     items
       .map(
-        ([question, answer]) => {
+        ([question, answer, isMarkup = false]) => {
           const normalisedQuestion = question.toLowerCase();
           const relatedService = normalisedQuestion.includes("nanoplasty")
             ? services.find((service) => service.slug === "nanoplasty")
             : normalisedQuestion.includes("keratin") || normalisedQuestion.includes("smoothing treatment")
               ? services.find((service) => service.slug === "keratin")
               : null;
-          return '<details' + (relatedService ? serviceAttributes(relatedService) : "") + '><summary><span>' + question + '</span><span aria-hidden="true">+</span></summary><p>' + answer + "</p></details>";
+          const answerMarkup = isMarkup ? '<div class="faq-answer">' + answer + "</div>" : "<p>" + answer + "</p>";
+          return '<details' + (relatedService ? serviceAttributes(relatedService) : "") + '><summary><span>' + question + '</span><span aria-hidden="true">+</span></summary>' + answerMarkup + "</details>";
         }
       )
       .join("") +
@@ -480,6 +481,7 @@ function nanoplastyPage(service) {
     '<section class="section section--soft"><div class="shell">' + sectionHeading("The benefits", "Why You’ll Love Nanoplasty", "A premium smoothing and restoring treatment designed around your hair.", "center") + '<div class="nanoplasty-benefits">' + benefits.map(([title, copy]) => '<article><h3>' + title + '</h3><p>' + copy + '</p></article>').join("") + '</div></div></section>',
     '<section class="section shell nanoplasty-suitability"><div>' + sectionHeading("Your hair", "Who Is It Suitable For?", "") + '<p>Your Vivo stylist will choose the correct Floractive formula for your hair type.</p></div><ul class="benefit-list">' + suitableFor.map((item) => '<li>' + item + '</li>').join("") + '</ul></section>',
     '<section class="section section--soft"><div class="shell price-layout"><div>' + sectionHeading("Pricing", "A clear starting point.", "Final pricing will be confirmed following consultation.") + '</div><div class="price-guide">' + service.prices.map(([label, price], index) => '<div class="price-row price-row--detail"><span' + contentAttribute("services.nanoplasty.prices." + index + ".label") + '>' + label + '</span><strong' + contentAttribute("services.nanoplasty.prices." + index + ".price") + '>' + price + '</strong></div>').join("") + '</div></div></section>',
+    '<section class="section shell faq-section">' + sectionHeading("Frequently asked questions", "Nanoplasty, clearly explained.", "Everything you need to know before and after your treatment.") + faq(nanoplastyFaqs) + '</section>',
     cta("Let’s plan your Nanoplasty treatment.", "Book a consultation to assess your hair, select the right Floractive formula and plan your smoothest, most manageable finish."),
   ].join("\n");
 }

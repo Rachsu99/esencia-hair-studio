@@ -131,6 +131,10 @@ test("publishes Keratin aftercare and extension information", async () => {
   assert.match(nanoplasty, /Style Your Way/);
   assert.match(nanoplasty, /Vivo stylist will choose the correct Floractive formula/);
   assert.match(nanoplasty, /assets\/images\/studio\/nanoplasty-floractive\.jpeg/);
+  assert.match(nanoplasty, /Frequently asked questions/);
+  assert.match(nanoplasty, /How long does Nanoplasty last\?/);
+  assert.match(nanoplasty, /Aftercare & Maintenance/);
+  assert.match(nanoplasty, /Should I use a sulphate-free shampoo\?/);
   assert.doesNotMatch(nanoplasty, /advanced smoothing option for clients/i);
   assert.match(extensions, /Tape Extensions/);
   assert.match(extensions, /K-Tip Extensions/);

@@ -211,6 +211,10 @@ em { font-weight: 400; color: var(--rose); }
 .faq-list summary span:last-child { color: var(--rose); font-family: var(--sans); font-size: 1.4rem; font-weight: 300; transition: transform var(--motion-fast); }
 .faq-list details[open] summary span:last-child { transform: rotate(45deg); }
 .faq-list details p { max-width: 700px; padding: 0 42px 24px 0; color: var(--taupe); font-size: .92rem; }
+.faq-list .faq-answer { max-width: 700px; padding: 0 42px 24px 0; color: var(--taupe); font-size: .92rem; }
+.faq-list .faq-answer p { padding: 0; }
+.faq-list .faq-answer ul { display: grid; gap: 12px; margin: 18px 0 0; padding-left: 20px; }
+.faq-list .faq-answer li { padding-left: 6px; }
 
 .cta-section { padding: clamp(90px, 11vw, 150px) 24px; background: var(--color-primary); color: var(--color-on-primary); text-align: center; }
 .cta-section__inner { max-width: 850px; }
