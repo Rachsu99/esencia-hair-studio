@@ -110,6 +110,7 @@ test("keeps the enquiry flow honest and accessible", async () => {
 
 test("publishes Keratin aftercare and extension information", async () => {
   const keratin = await readFile(path.join(root, "keratin.html"), "utf8");
+  const nanoplasty = await readFile(path.join(root, "nanoplasty.html"), "utf8");
   const extensions = await readFile(path.join(root, "hair-extensions.html"), "utf8");
   const removal = await readFile(path.join(root, "extension-removal.html"), "utf8");
   const styling = await readFile(path.join(root, "styling.html"), "utf8");
@@ -120,6 +121,17 @@ test("publishes Keratin aftercare and extension information", async () => {
   assert.match(keratin, /formaldehyde-free/i);
   assert.match(keratin, /Results can last up to 3 months/i);
   assert.match(keratin, /Ready for smoother, more manageable hair/i);
+  assert.match(nanoplasty, /What Is Nanoplasty\?/);
+  assert.match(nanoplasty, /Why You’ll Love Nanoplasty/);
+  assert.match(nanoplasty, /Ultra-Sleek Long-Lasting Results/);
+  assert.match(nanoplasty, /100% Frizz Freedom/);
+  assert.match(nanoplasty, /Mirror-Like Shine/);
+  assert.match(nanoplasty, /Deep Fibre Restoration/);
+  assert.match(nanoplasty, /Clean, Vegan Formula/);
+  assert.match(nanoplasty, /Style Your Way/);
+  assert.match(nanoplasty, /Vivo stylist will choose the correct Floractive formula/);
+  assert.match(nanoplasty, /assets\/images\/studio\/nanoplasty-floractive\.jpeg/);
+  assert.doesNotMatch(nanoplasty, /advanced smoothing option for clients/i);
   assert.match(extensions, /Tape Extensions/);
   assert.match(extensions, /K-Tip Extensions/);
   assert.match(extensions, /Price on Consultation/);
