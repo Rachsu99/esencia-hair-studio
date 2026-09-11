@@ -4,6 +4,10 @@
   "account_id": "9997b3a7d9f144f03c921aaef9c0d53d",
   "compatibility_date": "2026-08-16",
   "main": "./worker/index.ts",
+  "vars": {
+    "ACCESS_TEAM_DOMAIN": "https://esencia-hair-studio.cloudflareaccess.com",
+    "ACCESS_AUD": "8e3077c04109d725afbf2004f2aa34ce77af4e119f4296ba22c68a37db5c1e92"
+  },
   "d1_databases": [
     {
       "binding": "ADMIN_DB",
