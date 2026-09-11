@@ -17,10 +17,9 @@
     "verify:project": "node scripts/verify-project.mjs",
     "verify:push": "node scripts/verify-project.mjs --push",
     "verify:deploy": "node scripts/verify-project.mjs --deploy",
-    "admin:hash": "node scripts/hash-admin-password.mjs",
     "typecheck": "wrangler types --check=false && tsc --noEmit",
-    "test": "npm run build && npm run typecheck && node --test tests/site.test.mjs",
-    "lint": "node --check scripts/build.mjs && node --check scripts/serve.mjs && node --check scripts/hash-admin-password.mjs && node --check js/main.js && node --check js/admin.js && npm run typecheck"
+    "test": "npm run build && npm run typecheck && node --test tests/site.test.mjs tests/pricing.test.mjs",
+    "lint": "node --check scripts/build.mjs && node --check scripts/serve.mjs && node --check js/main.js && node --check js/admin.js && npm run typecheck"
   },
   "devDependencies": {
     "typescript": "5.9.2",

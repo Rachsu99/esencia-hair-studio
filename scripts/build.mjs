@@ -2,6 +2,7 @@ import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import { galleryImages, nanoplastyFaqs, services, site, treatmentFaqs } from "../site.config.mjs";
+import { priceKeyFor, startingPriceKeys } from "../price.config.mjs";
 
 const root = process.cwd();
 const productionUrl = (process.env.SITE_URL || site.url || "").replace(/\/$/, "");
@@ -11,6 +12,7 @@ const publicGalleryImages = galleryImages;
 const publicPricingNote = "Keratin prices are based on hair length, thickness and the amount of product required. Final pricing will be confirmed following consultation.";
 const serviceAttributes = (service) => ' data-service="' + service.slug + '"' + (service.visible === false ? " hidden" : "");
 const contentAttribute = (key) => ' data-content="' + key + '"';
+const priceAttribute = (key, variant = "") => key ? ' data-price-key="' + key + '"' + (variant ? ' data-price-variant="' + variant + '"' : "") : "";
 const cssVersion = createHash("sha256")
   .update(await readFile(path.join(root, "css", "style.css")))
   .digest("hex")
@@ -181,7 +183,7 @@ function layout({ file, active, title, description, content, socialImage = "asse
     heroPreload,
     '<link rel="preload" href="css/style.css?v=' + cssVersion + '" as="style">',
     '<link rel="stylesheet" href="css/style.css?v=' + cssVersion + '">',
-    '<script type="application/ld+json">' + schema(active) + "</script>",
+    '<script type="application/ld+json"' + (services.some((service) => service.slug === active) ? ' data-service-schema="' + active + '"' : "") + '>' + schema(active) + "</script>",
     '<script src="js/main.js" defer></script>',
     "</head>",
     "<body>",
@@ -241,7 +243,7 @@ function serviceCards() {
           service.name +
           "</h3><p" + contentAttribute("services." + service.slug + ".summary") + ">" +
           service.summary +
-          '</p><div class="service-card__footer"><strong' + contentAttribute("services." + service.slug + ".startingPrice") + '>' +
+          '</p><div class="service-card__footer"><strong' + contentAttribute("services." + service.slug + ".startingPrice") + priceAttribute(startingPriceKeys[service.slug]) + '>' +
           service.startingPrice +
           '</strong><a class="text-link" href="' +
           service.file +
@@ -262,7 +264,7 @@ function comparison() {
     ["Primary goal", "Softer, smoother manageability", "Long-lasting straightness, shine and frizz control"],
     ["Finish", "Soft and polished", "Straight, smooth hair with natural movement"],
     ["Frizz", "Designed to reduce frizz", "100% Frizz Freedom"],
-    ["Starting price", "From $180", "From $280"],
+    ["Starting price", "From $180", "From $280", "keratin-short", "nanoplasty-short"],
     ["Consultation", "Recommended", "Floractive formula selected for your hair type"],
   ];
   return [
@@ -271,8 +273,8 @@ function comparison() {
     '<div class="comparison__row comparison__head" role="row"><span></span><strong>Keratin</strong><strong>Nanoplasty</strong></div>',
     rows
       .map(
-        ([label, keratin, nano]) =>
-          '<div class="comparison__row" role="row"><span>' + label + "</span><span>" + keratin + "</span><span>" + nano + "</span></div>"
+        ([label, keratin, nano, keratinKey, nanoKey]) =>
+          '<div class="comparison__row" role="row"><span>' + label + "</span><span" + priceAttribute(keratinKey, keratinKey ? "capitalize" : "") + ">" + keratin + "</span><span" + priceAttribute(nanoKey, nanoKey ? "capitalize" : "") + ">" + nano + "</span></div>"
       )
       .join(""),
     "</div>",
@@ -321,7 +323,7 @@ function allPrices() {
           "</p><h3" + contentAttribute("services." + service.slug + ".name") + ">" +
           service.name +
           "</h3>" +
-          service.prices.map(([label, price], index) => "<div><span" + contentAttribute("services." + service.slug + ".prices." + index + ".label") + ">" + label + "</span><strong" + contentAttribute("services." + service.slug + ".prices." + index + ".price") + ">" + price + "</strong>" + (service.priceDescriptions?.[index] ? '<small class="all-prices__detail">' + service.priceDescriptions[index] + "</small>" : "") + "</div>").join("") +
+          service.prices.map(([label, price], index) => "<div><span" + contentAttribute("services." + service.slug + ".prices." + index + ".label") + ">" + label + "</span><strong" + contentAttribute("services." + service.slug + ".prices." + index + ".price") + priceAttribute(priceKeyFor(service.slug, index)) + ">" + price + "</strong>" + (service.priceDescriptions?.[index] ? '<small class="all-prices__detail">' + service.priceDescriptions[index] + "</small>" : "") + "</div>").join("") +
           '<a class="text-link" href="' +
           service.file +
           '">Service details →</a></article>'
@@ -421,7 +423,7 @@ function servicePage(service) {
   const serviceFaqsBySlug = {
     haircuts: [
         ["What is included in a haircut appointment?", "Ladies Haircut includes shampoo, haircut and blow wave. Shampoo, Treatment & Haircut includes a 5-minute relaxing scalp massage, treatment, haircut and blow wave."],
-        ["Can I add a treatment?", "Yes. The Shampoo, Treatment & Haircut service is available for $95."],
+        ["Can I add a treatment?", 'Yes. The Shampoo, Treatment & Haircut service is available for <span data-price-key="haircuts-treatment">$95</span>.', true],
         ["How should I prepare?", "Bring reference images if helpful and tell Rachel how you usually wear and style your hair."],
     ],
     "hair-extensions": [
@@ -431,12 +433,12 @@ function servicePage(service) {
     ],
     "extension-removal": [
       ["Why should extensions be removed professionally?", "Careful professional removal helps protect your natural hair and prepares it for a refresh, reapplication or break."],
-      ["How much does extension removal cost?", "Tape Extension Removal starts from $60 and K-Tip Extension Removal starts from $100. Pricing may vary with the amount of extensions and time required."],
+      ["How much does extension removal cost?", 'Tape Extension Removal starts <span data-price-key="removal-tape">from $60</span> and K-Tip Extension Removal starts <span data-price-key="removal-k-tip">from $100</span>. Pricing may vary with the amount of extensions and time required.', true],
       ["Can I plan my next extension appointment at the same time?", "Yes. Tell Rachel whether you are considering a refresh, reapplication or a break so the next step can be planned around your hair."],
     ],
     styling: [
       ["Which styling services are available?", "Choose a Shampoo & Blow-Dry for a smooth, polished finish or Dry Style – Curls & Waves for soft movement and occasion styling."],
-      ["Is there an extra charge for very long or thick hair?", "Extra long or thick hair is an additional $10 because more styling time may be required."],
+      ["Is there an extra charge for very long or thick hair?", 'Extra long or thick hair is an additional <span data-price-key="styling-extra-long-thick" data-price-variant="fixed">$10</span> because more styling time may be required.', true],
       ["Can styling be tailored for an occasion?", "Yes. Share the finish you have in mind when enquiring so Rachel can plan a look around your hair and occasion."],
     ],
   };
@@ -445,7 +447,7 @@ function servicePage(service) {
   return [
     pageHero(service.eyebrow, service.name, service.intro, service.image, service.width, service.height, service.alt, true, "services." + service.slug),
     '<section class="section shell service-intro"><div>' + sectionHeading("Who it may suit", introTitles[service.slug] || "A smoother way to wear your hair.", service.suit) + "<p" + contentAttribute("services." + service.slug + ".summary") + ">" + service.summary + '</p></div><ul class="benefit-list">' + service.benefits.map((benefit) => "<li>" + benefit + "</li>").join("") + "</ul></section>",
-    '<section class="section section--soft"><div class="shell price-layout"><div>' + sectionHeading("Pricing", "A clear starting point.") + (isCut ? '<p class="section-heading__copy">Choose a tailored haircut or add a shampoo and conditioning treatment.</p>' : (service.slug.includes("extension") || service.slug === "styling" ? '<p class="section-heading__copy">Final timing and any additional requirements are confirmed during your appointment planning.</p>' : pricingNoteBlock())) + '</div><div class="price-guide">' + service.prices.map(([label, price], index) => '<div class="price-row price-row--detail"><span' + contentAttribute("services." + service.slug + ".prices." + index + ".label") + ">" + label + "</span><strong" + contentAttribute("services." + service.slug + ".prices." + index + ".price") + ">" + price + "</strong>" + (service.priceDescriptions?.[index] ? '<small>' + service.priceDescriptions[index] + '</small>' : "") + "</div>").join("") + (service.extraNote ? '<p class="price-guide__note">' + service.extraNote + '</p>' : "") + "</div></div></section>",
+    '<section class="section section--soft"><div class="shell price-layout"><div>' + sectionHeading("Pricing", "A clear starting point.") + (isCut ? '<p class="section-heading__copy">Choose a tailored haircut or add a shampoo and conditioning treatment.</p>' : (service.slug.includes("extension") || service.slug === "styling" ? '<p class="section-heading__copy">Final timing and any additional requirements are confirmed during your appointment planning.</p>' : pricingNoteBlock())) + '</div><div class="price-guide">' + service.prices.map(([label, price], index) => '<div class="price-row price-row--detail"><span' + contentAttribute("services." + service.slug + ".prices." + index + ".label") + ">" + label + "</span><strong" + contentAttribute("services." + service.slug + ".prices." + index + ".price") + priceAttribute(priceKeyFor(service.slug, index)) + ">" + price + "</strong>" + (service.priceDescriptions?.[index] ? '<small>' + service.priceDescriptions[index] + '</small>' : "") + "</div>").join("") + (service.extraNote ? '<p class="price-guide__note">' + (service.slug === "styling" ? 'Extra Long / Thick Hair — <span data-price-key="styling-extra-long-thick">+$10</span>' : service.extraNote) + '</p>' : "") + "</div></div></section>",
     '<section class="section shell">' + sectionHeading("Your appointment", "A thoughtful process, from hello to finish.") + '<div class="process-grid">' + [
       ["Consult", "We start with your hair, routine and desired result."],
       ["Assess", "Rachel considers condition, length, thickness and suitability."],
@@ -480,7 +482,7 @@ function nanoplastyPage(service) {
     '<section class="section shell nanoplasty-overview">' + sectionHeading("The treatment", "What Is Nanoplasty?", service.intro, "center") + '</section>',
     '<section class="section section--soft"><div class="shell">' + sectionHeading("The benefits", "Why You’ll Love Nanoplasty", "A premium smoothing and restoring treatment designed around your hair.", "center") + '<div class="nanoplasty-benefits">' + benefits.map(([title, copy]) => '<article><h3>' + title + '</h3><p>' + copy + '</p></article>').join("") + '</div></div></section>',
     '<section class="section shell nanoplasty-suitability"><div>' + sectionHeading("Your hair", "Who Is It Suitable For?", "") + '<p>Your Vivo stylist will choose the correct Floractive formula for your hair type.</p></div><ul class="benefit-list">' + suitableFor.map((item) => '<li>' + item + '</li>').join("") + '</ul></section>',
-    '<section class="section section--soft"><div class="shell price-layout"><div>' + sectionHeading("Pricing", "A clear starting point.", "Final pricing will be confirmed following consultation.") + '</div><div class="price-guide">' + service.prices.map(([label, price], index) => '<div class="price-row price-row--detail"><span' + contentAttribute("services.nanoplasty.prices." + index + ".label") + '>' + label + '</span><strong' + contentAttribute("services.nanoplasty.prices." + index + ".price") + '>' + price + '</strong></div>').join("") + '</div></div></section>',
+    '<section class="section section--soft"><div class="shell price-layout"><div>' + sectionHeading("Pricing", "A clear starting point.", "Final pricing will be confirmed following consultation.") + '</div><div class="price-guide">' + service.prices.map(([label, price], index) => '<div class="price-row price-row--detail"><span' + contentAttribute("services.nanoplasty.prices." + index + ".label") + '>' + label + '</span><strong' + contentAttribute("services.nanoplasty.prices." + index + ".price") + priceAttribute(priceKeyFor("nanoplasty", index)) + '>' + price + '</strong></div>').join("") + '</div></div></section>',
     '<section class="section shell faq-section">' + sectionHeading("Frequently asked questions", "Nanoplasty, clearly explained.", "Everything you need to know before and after your treatment.") + faq(nanoplastyFaqs) + '</section>',
     cta("Let’s plan your Nanoplasty treatment.", "Book a consultation to assess your hair, select the right Floractive formula and plan your smoothest, most manageable finish."),
   ].join("\n");
@@ -497,7 +499,7 @@ function keratinPage(service) {
     pageHero(service.eyebrow, service.name, service.intro, service.image, service.width, service.height, service.alt, true, "services.keratin"),
     '<section class="section shell keratin-intro"><div>' + sectionHeading("Keratin smoothing treatment", "Smoother hair. Softer texture. Easier styling.", service.suit) + '<p>Perfect for clients who want less frizz, smoother hair, and a polished finish that still feels like them.</p></div><ul class="benefit-list">' + service.benefits.map((benefit) => '<li>' + benefit + '</li>').join("") + '</ul></section>',
     '<section class="section section--soft"><div class="shell keratin-aftercare"><div>' + sectionHeading("Aftercare", "Keep your results looking beautiful.", "For best results, please avoid washing your hair for 48 hours after your Keratin treatment. To help you maintain your smooth, glossy results at home, you’ll receive a complimentary shampoo and conditioner to take home with you after your treatment.") + '</div><figure><img src="assets/images/studio/brunette-waves.webp" width="1080" height="1322" alt="Soft brunette waves" loading="lazy"></figure></div></section>',
-    '<section class="section"><div class="shell price-layout"><div>' + sectionHeading("Pricing", "A clear starting point.", "Keratin prices are based on hair length, thickness and the amount of product required. Final pricing will be confirmed following consultation.") + '</div><div class="price-guide">' + service.prices.map(([label, price], index) => '<div class="price-row"><span' + contentAttribute("services.keratin.prices." + index + ".label") + '>' + label + '</span><strong' + contentAttribute("services.keratin.prices." + index + ".price") + '>' + price + '</strong></div>').join("") + '</div></div></section>',
+    '<section class="section"><div class="shell price-layout"><div>' + sectionHeading("Pricing", "A clear starting point.", "Keratin prices are based on hair length, thickness and the amount of product required. Final pricing will be confirmed following consultation.") + '</div><div class="price-guide">' + service.prices.map(([label, price], index) => '<div class="price-row"><span' + contentAttribute("services.keratin.prices." + index + ".label") + '>' + label + '</span><strong' + contentAttribute("services.keratin.prices." + index + ".price") + priceAttribute(priceKeyFor("keratin", index)) + '>' + price + '</strong></div>').join("") + '</div></div></section>',
     '<section class="section shell faq-section">' + sectionHeading("Questions", "Keratin smoothing FAQs") + faq(keratinFaqs) + '</section>',
     '<section class="section section--soft"><div class="shell keratin-experience">' + sectionHeading("The Esencia experience", "Gentle. Personalised. Designed around your hair.", "Every Keratin Smoothing Treatment includes a personalised consultation to ensure the treatment is right for your hair type, goals, and lifestyle. You’ll leave with smoother, softer, more manageable hair — and the confidence of knowing how to maintain it.", "center") + '</div></section>',
     cta("Ready for smoother, more manageable hair?", "Book your Keratin Smoothing Treatment today and enjoy effortless, frizz-free hair."),

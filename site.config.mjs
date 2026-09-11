@@ -168,7 +168,7 @@ export const services = [
 ];
 
 export const treatmentFaqs = [
-  ["How much does Keratin smoothing cost?", "Pricing starts from $180 and varies with hair length, thickness and the amount of product required. Final pricing is confirmed following consultation."],
+  ["How much does Keratin smoothing cost?", 'Pricing starts <span data-price-key="keratin-short">from $180</span> and varies with hair length, thickness and the amount of product required. Final pricing is confirmed following consultation.', true],
   ["How long do Keratin results last?", "Results can last up to 3 months with the right aftercare."],
   ["How do I know which smoothing treatment is right for me?", "Start with a consultation. Rachel can assess your hair, listen to your desired finish and guide you toward the most suitable service."],
   ["How long will my appointment take?", "Most appointments take approximately 1–2 hours depending on hair length and thickness."],

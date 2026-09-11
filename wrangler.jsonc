@@ -4,14 +4,12 @@
   "account_id": "9997b3a7d9f144f03c921aaef9c0d53d",
   "compatibility_date": "2026-08-16",
   "main": "./worker/index.ts",
-  "secrets": {
-    "required": ["ADMIN_USERNAME", "ADMIN_PASSWORD_HASH", "SESSION_SECRET"]
-  },
   "d1_databases": [
     {
       "binding": "ADMIN_DB",
       "database_name": "esencia-hair-studio-admin",
-      "database_id": "0b4598c2-932f-43bc-9865-34060a380660"
+      "database_id": "0b4598c2-932f-43bc-9865-34060a380660",
+      "migrations_dir": "./migrations"
     }
   ],
   "observability": {
@@ -40,6 +38,7 @@
       "/sitemap.xml",
       "/admin",
       "/admin/*",
+      "/api/prices",
       "/api/admin/*"
     ],
     "html_handling": "auto-trailing-slash",

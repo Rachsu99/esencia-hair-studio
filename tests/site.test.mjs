@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
+import { formatPrice, priceDefinitions } from "../price.config.mjs";
 import { services, site } from "../site.config.mjs";
 
 const root = process.cwd();
@@ -142,7 +143,7 @@ test("publishes Keratin aftercare and extension information", async () => {
   assert.match(extensions, /assets\/images\/studio\/tape-in-extensions-1\.webp/);
   assert.match(removal, /Tape Extension Removal/);
   assert.match(removal, /K-Tip Extension Removal/);
-  assert.match(styling, /Extra Long \/ Thick Hair — \+\$10/);
+  assert.match(styling, /Extra Long \/ Thick Hair — <span data-price-key="styling-extra-long-thick">\+\$10<\/span>/);
 });
 
 test("keeps private admin routes and credentials out of public markup", async () => {
@@ -153,9 +154,20 @@ test("keeps private admin routes and credentials out of public markup", async ()
   assert.match(robots, /Disallow: \/admin/);
   assert.match(robots, /Disallow: \/api\/admin\//);
   assert.match(wrangler, /"directory": "\.\/dist"/);
-  assert.match(wrangler, /"ADMIN_PASSWORD_HASH"/);
-  assert.doesNotMatch(wrangler, /pbkdf2-sha256\$|Rachsu99@gmail\.com/);
+  assert.doesNotMatch(wrangler, /ADMIN_PASSWORD|SESSION_SECRET|pbkdf2-sha256\$|Rachsu99@gmail\.com/);
+  assert.match(wrangler, /"migrations_dir": "\.\/migrations"/);
+  assert.match(wrangler, /"\/api\/prices"/);
   assert.equal(existsSync(path.join(root, "dist", "assets", "images", "brand", "rachel-sticker.png")), false);
+});
+
+test("maps every current service price to a stable dynamic key with a static fallback", async () => {
+  const publicHtml = (await Promise.all(pages.map((page) => readFile(path.join(root, page), "utf8")))).join("\n");
+  for (const definition of priceDefinitions) {
+    assert.match(publicHtml, new RegExp(`data-price-key="${definition.key}"`), `${definition.key} should be consumed publicly`);
+    assert.equal(formatPrice(definition.amountCents, definition.displayType).length > 0, true);
+  }
+  assert.match(publicHtml, /data-service-schema="keratin"/);
+  assert.match(publicHtml, /data-service-schema="nanoplasty"/);
 });
 
 test("emits production domain metadata and Cloudflare deployment files", async () => {

@@ -6,6 +6,7 @@
     "lib": ["ES2022", "WebWorker"],
     "types": ["./worker-configuration.d.ts"],
     "allowJs": true,
+    "allowImportingTsExtensions": true,
     "checkJs": false,
     "strict": true,
     "noEmit": true,
