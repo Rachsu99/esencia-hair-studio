@@ -110,8 +110,9 @@ test("keeps the enquiry flow honest and accessible", async () => {
   assert.match(home, /<section class="location-section"/);
   assert.match(home, /Find Us in Greenlane/);
   assert.match(home, /Greenlane, Auckland/);
-  assert.match(home, /title="Map showing the Greenlane area of Auckland"/);
-  assert.match(home, /loading="lazy"/);
+  assert.match(home, /Illustrated map of the Greenlane area of Auckland/);
+  assert.match(home, /without a precise salon location/);
+  assert.doesNotMatch(home, /<iframe|openstreetmap/i);
   assert.doesNotMatch(home, /1[9]3\s+Green\s+Lane\s+West|1[0]51/i);
 });
 
@@ -165,8 +166,8 @@ test("keeps private admin routes and credentials out of public markup", async ()
   assert.doesNotMatch(wrangler, /ADMIN_PASSWORD|SESSION_SECRET|pbkdf2-sha256\$|Rachsu99@gmail\.com/);
   assert.match(wrangler, /"migrations_dir": "\.\/migrations"/);
   assert.match(wrangler, /"\/api\/prices"/);
-  assert.match(await readFile(path.join(root, "_headers"), "utf8"), /frame-src https:\/\/www\.openstreetmap\.org/);
-  assert.match(worker, /frame-src https:\/\/www\.openstreetmap\.org/);
+  assert.doesNotMatch(await readFile(path.join(root, "_headers"), "utf8"), /openstreetmap/i);
+  assert.doesNotMatch(worker, /openstreetmap/i);
   assert.equal(existsSync(path.join(root, "dist", "assets", "images", "brand", "rachel-sticker.png")), false);
 });
 
