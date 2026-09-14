@@ -107,6 +107,12 @@ test("keeps the enquiry flow honest and accessible", async () => {
   assert.doesNotMatch(home, /data-service="keratin" hidden/);
   assert.match(home, /data-service="nanoplasty"/);
   assert.doesNotMatch(home, /data-service="nanoplasty" hidden/);
+  assert.match(home, /<section class="location-section"/);
+  assert.match(home, /Find Us in Greenlane/);
+  assert.match(home, /Greenlane, Auckland/);
+  assert.match(home, /title="Map showing the Greenlane area of Auckland"/);
+  assert.match(home, /loading="lazy"/);
+  assert.doesNotMatch(home, /1[9]3\s+Green\s+Lane\s+West|1[0]51/i);
 });
 
 test("publishes Keratin aftercare and extension information", async () => {

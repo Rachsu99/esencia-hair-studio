@@ -208,6 +208,17 @@ function sectionHeading(eyebrow, title, copy = "", align = "") {
   ].join("");
 }
 
+function locationSection() {
+  return [
+    '<section class="location-section" aria-labelledby="location-title">',
+    '<div class="shell location-section__grid">',
+    '<div class="location-section__copy"><p class="eyebrow">Visit Esencia</p><h2 id="location-title">Find Us in Greenlane.</h2><p>Located in Greenlane, Auckland, with easy access from surrounding central Auckland suburbs.</p></div>',
+    '<div class="location-map__frame"><iframe title="Map showing the Greenlane area of Auckland" src="https://www.openstreetmap.org/export/embed.html?bbox=174.771%2C-36.902%2C174.819%2C-36.872&amp;layer=mapnik" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="location-map__label" aria-hidden="true"><span>Greenlane</span><small>Auckland</small></div></div>',
+    '</div>',
+    '</section>',
+  ].join("");
+}
+
 function pageHero(eyebrow, title, copy, image, width, height, alt, dark = false, contentPrefix = "", extraClass = "") {
   return [
     '<section class="page-hero' + (dark ? " page-hero--dark" : "") + (extraClass ? " " + extraClass : "") + '">',
@@ -399,6 +410,7 @@ function homePage() {
     '<section class="instagram-section"><div class="shell"><div class="instagram-heading">' + sectionHeading("From the studio", "Follow our transformations.", "Follow Rachel’s official account for current Esencia work, appointment updates and studio inspiration.") + '<a class="button" href="' + site.instagram + '" target="_blank" rel="noopener noreferrer">Follow on Instagram ↗</a></div><div class="instagram-grid">' + instagramTiles + "</div></div></section>",
     '<section class="section shell faq-section">' + sectionHeading("Good to know", "Before you book") + faq() + "</section>",
     cta(),
+    locationSection(),
   ].join("\n");
 }
 

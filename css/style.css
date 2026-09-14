@@ -222,6 +222,18 @@ em { font-weight: 400; color: var(--rose); }
 .cta-section__inner > p:not(.eyebrow) { max-width: 590px; margin-inline: auto; color: var(--color-on-primary-muted); }
 .cta-section .eyebrow { color: var(--color-accent-soft); }
 
+.location-section { padding-block: clamp(72px, 9vw, 128px); border-bottom: 1px solid var(--line); background: var(--color-background-soft); }
+.location-section__grid { display: grid; grid-template-columns: minmax(0, .74fr) minmax(0, 1.26fr); gap: clamp(42px, 7vw, 110px); align-items: center; }
+.location-section__copy { max-width: 460px; margin-inline: auto; text-align: center; }
+.location-section__copy h2 { margin-bottom: 24px; }
+.location-section__copy > p:not(.eyebrow) { margin-bottom: 0; color: var(--taupe); font-size: clamp(.96rem, 1.3vw, 1.08rem); }
+.location-map__frame { position: relative; min-height: clamp(290px, 36vw, 460px); overflow: hidden; border: 1px solid rgba(73,58,52,.2); background: var(--color-surface-warm); box-shadow: var(--shadow-soft); isolation: isolate; }
+.location-map__frame::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(135deg, rgba(115,89,78,.12), transparent 45%, rgba(232,200,191,.12)); mix-blend-mode: multiply; }
+.location-map__frame iframe { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; border: 0; filter: saturate(.55) sepia(.12) contrast(.94) brightness(1.04); }
+.location-map__label { position: absolute; z-index: 2; left: 24px; bottom: 24px; display: grid; gap: 2px; min-width: 132px; padding: 15px 18px; border: 1px solid rgba(255,250,245,.54); background: rgba(73,58,52,.86); color: var(--color-on-primary); box-shadow: 0 10px 28px rgba(73,58,52,.2); text-align: left; }
+.location-map__label span { font-family: var(--serif); font-size: 1.45rem; line-height: 1; }
+.location-map__label small { color: var(--color-on-primary-muted); font-size: .6rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; }
+
 .page-hero { overflow: hidden; padding-block: clamp(60px, 7vw, 100px); border-bottom: 1px solid var(--line); }
 .page-hero__inner { display: grid; grid-template-columns: .9fr 1.1fr; gap: clamp(50px, 8vw, 120px); align-items: center; min-height: 580px; }
 .page-hero__inner > div:first-child { text-align: center; }
@@ -435,6 +447,9 @@ em { font-weight: 400; color: var(--rose); }
   .service-card__footer { display: flex; }
   .pricing-note { grid-template-columns: 1fr; gap: 12px; padding: 22px; }
   .story-grid, .results-grid, .service-intro, .price-layout, .nanoplasty-suitability, .about-story, .contact-hero__grid { grid-template-columns: 1fr; }
+  .location-section__grid { grid-template-columns: 1fr; gap: 38px; }
+  .location-section__copy { max-width: 580px; }
+  .location-map__frame { min-height: min(100vw, 440px); }
   .story-grid { gap: 58px; }
   .story-image { padding: 0 0 25px 25px; }
   .story-image::after { left: 25px; bottom: 25px; height: 48%; }
@@ -535,6 +550,9 @@ em { font-weight: 400; color: var(--rose); }
   .contact-details > div > *:last-child { grid-column: auto; }
   .footer__grid { grid-template-columns: 1fr; }
   .footer__brand, .footer__grid > div:last-child { grid-column: auto; }
+  .location-section { padding-block: 68px; }
+  .location-map__frame { min-height: 280px; }
+  .location-map__label { left: 16px; bottom: 16px; padding: 13px 15px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
