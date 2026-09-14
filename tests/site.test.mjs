@@ -157,6 +157,7 @@ test("keeps private admin routes and credentials out of public markup", async ()
   const home = await readFile(path.join(root, "index.html"), "utf8");
   const robots = await readFile(path.join(root, "robots.txt"), "utf8");
   const wrangler = await readFile(path.join(root, "wrangler.jsonc"), "utf8");
+  const worker = await readFile(path.join(root, "worker", "index.ts"), "utf8");
   assert.doesNotMatch(home, /\/admin|ADMIN_PASSWORD|SESSION_SECRET/);
   assert.match(robots, /Disallow: \/admin/);
   assert.match(robots, /Disallow: \/api\/admin\//);
@@ -165,6 +166,7 @@ test("keeps private admin routes and credentials out of public markup", async ()
   assert.match(wrangler, /"migrations_dir": "\.\/migrations"/);
   assert.match(wrangler, /"\/api\/prices"/);
   assert.match(await readFile(path.join(root, "_headers"), "utf8"), /frame-src https:\/\/www\.openstreetmap\.org/);
+  assert.match(worker, /frame-src https:\/\/www\.openstreetmap\.org/);
   assert.equal(existsSync(path.join(root, "dist", "assets", "images", "brand", "rachel-sticker.png")), false);
 });
 

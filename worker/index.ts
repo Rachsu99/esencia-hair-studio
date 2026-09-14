@@ -33,7 +33,7 @@ const MAX_PRICE_CENTS = 5_000_000;
 const securityHeaders = (admin = false): HeadersInit => ({
   "Content-Security-Policy": admin
     ? "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self' https://*.cloudflareaccess.com"
-    : "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'",
+    : "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; frame-src https://www.openstreetmap.org; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
   "Referrer-Policy": admin ? "no-referrer" : "strict-origin-when-cross-origin",
   "X-Content-Type-Options": "nosniff",
