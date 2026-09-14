@@ -164,6 +164,7 @@ test("keeps private admin routes and credentials out of public markup", async ()
   assert.doesNotMatch(wrangler, /ADMIN_PASSWORD|SESSION_SECRET|pbkdf2-sha256\$|Rachsu99@gmail\.com/);
   assert.match(wrangler, /"migrations_dir": "\.\/migrations"/);
   assert.match(wrangler, /"\/api\/prices"/);
+  assert.match(await readFile(path.join(root, "_headers"), "utf8"), /frame-src https:\/\/www\.openstreetmap\.org/);
   assert.equal(existsSync(path.join(root, "dist", "assets", "images", "brand", "rachel-sticker.png")), false);
 });
 
