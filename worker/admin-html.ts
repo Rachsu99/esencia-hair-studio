@@ -10,8 +10,8 @@ export const dashboardHtml = (email: string, logoutUrl: string) => `<!doctype ht
 <meta name="theme-color" content="#fbf8f3">
 <title>Pricing Admin | Esencia Hair Studio</title>
 <link rel="icon" type="image/webp" href="/assets/images/brand/esencia-logo.webp">
-<link rel="stylesheet" href="/css/admin.css?v=20260912a">
-<script src="/js/admin.js?v=20260912a" defer></script>
+<link rel="stylesheet" href="/css/admin.css?v=20260914a">
+<script src="/js/admin.js?v=20260914a" defer></script>
 </head>
 <body>
   <main class="admin-page">
@@ -40,5 +40,16 @@ export const dashboardHtml = (email: string, logoutUrl: string) => `<!doctype ht
       </div>
     </form>
   </main>
+  <dialog class="remove-dialog" data-remove-dialog aria-labelledby="remove-title">
+    <form method="dialog">
+      <p class="admin-eyebrow">Confirm removal</p>
+      <h2 id="remove-title">Remove “<span data-remove-name></span>”?</h2>
+      <p>This option will no longer appear on the website.</p>
+      <div class="remove-dialog__actions">
+        <button type="submit" value="cancel">Cancel</button>
+        <button class="styling-remove" type="submit" value="remove">Remove</button>
+      </div>
+    </form>
+  </dialog>
 </body>
 </html>`;

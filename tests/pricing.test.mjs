@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { formatPrice } from "../price.config.mjs";
 import { verifyAccessJwt } from "../worker/access-auth.ts";
-import { createWorker, validatePriceUpdate } from "../worker/index.ts";
+import { createWorker, validatePriceUpdate, validateStylingBatch } from "../worker/index.ts";
 
 const base64url = (value) => Buffer.from(typeof value === "string" ? value : JSON.stringify(value)).toString("base64url");
 
@@ -38,6 +38,21 @@ test("strictly validates price updates", () => {
   assert.throws(() => validatePriceUpdate({ key: "unknown-price", amountCents: 1000, version: 1 }));
   assert.throws(() => validatePriceUpdate({ key: "extensions-tape", amountCents: 1000, version: 1 }));
   assert.throws(() => validatePriceUpdate({ key: "keratin-short", amountCents: 19000, version: 1, sql: "DROP TABLE service_prices" }));
+});
+
+test("strictly validates dynamic Styling options", () => {
+  assert.deepEqual(validateStylingBatch({ items: [{ key: null, label: " Event Styling ", amountCents: 7500, version: null }], removed: [] }), {
+    items: [{ key: null, label: "Event Styling", amountCents: 7500, version: null }],
+    removed: [],
+  });
+  for (const label of ["", "x", "a".repeat(81), "bad\u0000name"]) {
+    assert.throws(() => validateStylingBatch({ items: [{ key: null, label, amountCents: 7500, version: null }], removed: [] }));
+  }
+  for (const amountCents of [-1, "75", NaN, Infinity, 5_000_001]) {
+    assert.throws(() => validateStylingBatch({ items: [{ key: null, label: "Event Styling", amountCents, version: null }], removed: [] }));
+  }
+  assert.throws(() => validateStylingBatch({ items: [], removed: [] }));
+  assert.throws(() => validateStylingBatch({ items: [{ key: "styling-blow-dry", label: "Blow-Dry", amountCents: 5500, version: 1 }], removed: [{ key: "styling-blow-dry", version: 1 }] }));
 });
 
 test("verifies a correctly signed Cloudflare Access JWT", async () => {

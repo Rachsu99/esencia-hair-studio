@@ -35,6 +35,26 @@ button, input { font: inherit; } a { color: inherit; } :focus-visible { outline:
 .admin-actions p { margin: 0; color: var(--taupe); font-size: .875rem; }
 .admin-button { min-height: 48px; border: 0; padding: 12px 26px; color: #fffaf5; background: var(--mocha); cursor: pointer; font-size: .875rem; font-weight: 750; }
 .admin-button:hover { background: #73594e; } .admin-button:disabled { cursor: not-allowed; opacity: .5; }
+.price-group--styling { display: grid; gap: 18px; }
+.price-group--styling h2 { margin-bottom: 0; }
+.styling-help { margin: 0; color: var(--taupe); line-height: 1.6; }
+.styling-list { display: grid; gap: 16px; }
+.styling-card { display: grid; grid-template-columns: minmax(0,1fr) minmax(180px,.55fr); gap: 9px 24px; margin: 0; border: 1px solid var(--line); padding: 20px; background: var(--paper); }
+.styling-card legend { padding: 0 8px; color: var(--mocha); font: 400 1.1rem/1.2 Georgia,"Times New Roman",serif; }
+.styling-card label { font-size: .8rem; font-weight: 700; letter-spacing: .04em; }
+.styling-name { width: 100%; min-height: 48px; border: 1px solid var(--line); padding: 11px 14px; color: var(--espresso); background: #fff; }
+.styling-name:focus { border-color: var(--rose); outline: 0; box-shadow: 0 0 0 3px rgba(157,95,85,.15); }
+.styling-card__actions { grid-column: 1 / -1; display: flex; gap: 8px; margin-top: 8px; }
+.styling-card__actions button,.styling-add,.remove-dialog button { min-height: 44px; border: 1px solid var(--line); padding: 9px 15px; color: var(--espresso); background: var(--soft); cursor: pointer; font-weight: 700; }
+.styling-card__actions button:disabled { cursor: not-allowed; opacity: .42; }
+.styling-card__actions .styling-remove,.remove-dialog .styling-remove { margin-left: auto; border-color: rgba(140,47,47,.28); color: var(--danger); background: #fff8f6; }
+.styling-add { justify-self: start; border-color: rgba(157,95,85,.35); color: var(--rose); background: var(--paper); }
+.remove-dialog { width: min(100% - 32px,480px); border: 1px solid var(--line); padding: 0; color: var(--espresso); background: var(--paper); box-shadow: 0 24px 80px rgba(63,51,46,.24); }
+.remove-dialog::backdrop { background: rgba(40,31,27,.52); backdrop-filter: blur(3px); }
+.remove-dialog form { padding: 30px; }
+.remove-dialog h2 { margin: 8px 0 12px; font: 400 1.8rem/1.2 Georgia,"Times New Roman",serif; }
+.remove-dialog p:not(.admin-eyebrow) { color: var(--taupe); line-height: 1.6; }
+.remove-dialog__actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
 @media (max-width: 620px) {
   .admin-page { width: min(100% - 24px,900px); padding-top: 14px; }
   .admin-header { align-items: flex-start; } .admin-brand img { width: 124px; }
@@ -42,5 +62,8 @@ button, input { font: inherit; } a { color: inherit; } :focus-visible { outline:
   .admin-intro { margin: 42px auto 30px; }
   .price-field { grid-template-columns: 1fr; } .price-field > small { grid-column: 1; }
   .admin-actions { align-items: stretch; flex-direction: column; } .admin-actions p { text-align: center; } .admin-button { width: 100%; }
+  .styling-card { grid-template-columns: 1fr; }
+  .styling-card__actions { grid-column: 1; flex-wrap: wrap; }
+  .styling-card__actions .styling-remove { flex-basis: 100%; margin-left: 0; }
 }
 @media (prefers-reduced-motion: no-preference) { .admin-button,.price-control { transition: border-color 160ms ease,box-shadow 160ms ease,background-color 160ms ease,opacity 160ms ease; } }

@@ -143,7 +143,8 @@ test("publishes Keratin aftercare and extension information", async () => {
   assert.match(extensions, /assets\/images\/studio\/tape-in-extensions-1\.webp/);
   assert.match(removal, /Tape Extension Removal/);
   assert.match(removal, /K-Tip Extension Removal/);
-  assert.match(styling, /Extra Long \/ Thick Hair — <span data-price-key="styling-extra-long-thick">\+\$10<\/span>/);
+  assert.match(styling, /data-styling-options="detail"/);
+  assert.match(styling, /<span>Extra Long \/ Thick Hair<\/span><strong>\+\$10<\/strong>/);
 });
 
 test("keeps private admin routes and credentials out of public markup", async () => {

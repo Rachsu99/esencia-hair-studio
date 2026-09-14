@@ -19,9 +19,14 @@ export type PriceRow = {
   version: number;
   updated_at: string;
   updated_by: string;
+  is_active: number;
+  created_at: string;
+  description: string | null;
 };
 
 export type PriceUpdate = { key: string; amountCents: number; version: number };
+export type StylingItemInput = { key: string | null; label: string; amountCents: number; version: number | null };
+export type StylingBatchInput = { items: StylingItemInput[]; removed: Array<{ key: string; version: number }> };
 const MAX_BODY_BYTES = 16_384;
 const MAX_PRICE_CENTS = 5_000_000;
 
@@ -76,8 +81,10 @@ async function readJson(request: Request): Promise<unknown> {
   return JSON.parse(body);
 }
 
-async function loadPrices(database: D1Database): Promise<PriceRow[]> {
-  const result = await database.prepare("SELECT price_key, category, label, amount_cents, display_type, sort_order, version, updated_at, updated_by FROM service_prices ORDER BY sort_order").all<PriceRow>();
+const PRICE_COLUMNS = "price_key, category, label, amount_cents, display_type, sort_order, version, updated_at, updated_by, is_active, created_at, description";
+
+async function loadPrices(database: D1Database, includeInactive = false): Promise<PriceRow[]> {
+  const result = await database.prepare(`SELECT ${PRICE_COLUMNS} FROM service_prices ${includeInactive ? "" : "WHERE is_active = 1"} ORDER BY sort_order`).all<PriceRow>();
   return result.results;
 }
 
@@ -92,7 +99,42 @@ function presentPrice(row: PriceRow) {
     editable: row.display_type !== "consultation",
     version: row.version,
     updatedAt: row.updated_at,
+    description: row.description,
   };
+}
+
+export function validateStylingBatch(value: unknown): StylingBatchInput {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Invalid Styling update.");
+  const candidate = value as Record<string, unknown>;
+  if (Object.keys(candidate).some((key) => !["items", "removed"].includes(key))) throw new Error("Unknown fields are not allowed.");
+  if (!Array.isArray(candidate.items) || !Array.isArray(candidate.removed)) throw new Error("Invalid Styling update.");
+  if (candidate.items.length > 30 || candidate.removed.length > 30) throw new Error("Too many Styling options.");
+  const items = candidate.items.map((raw) => {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Invalid Styling option.");
+    const item = raw as Record<string, unknown>;
+    if (Object.keys(item).some((key) => !["key", "label", "amountCents", "version"].includes(key))) throw new Error("Unknown Styling fields are not allowed.");
+    const key = item.key === null ? null : String(item.key || "");
+    if (key !== null && !/^styling-[a-z0-9-]{3,72}$/.test(key)) throw new Error("Invalid Styling key.");
+    if (typeof item.label !== "string") throw new Error("Enter a Styling service name.");
+    const label = item.label.trim().replace(/\s+/g, " ");
+    if (label.length < 2 || label.length > 80 || /[\u0000-\u001f\u007f]/.test(label)) throw new Error("Styling service names must be between 2 and 80 characters.");
+    if (!Number.isSafeInteger(item.amountCents) || Number(item.amountCents) < 0 || Number(item.amountCents) > MAX_PRICE_CENTS) throw new Error("Enter a valid Styling price between $0 and $50,000.");
+    const version = item.version === null ? null : Number(item.version);
+    if (key === null ? version !== null : !Number.isSafeInteger(version) || Number(version) < 1) throw new Error("Invalid Styling version.");
+    return { key, label, amountCents: Number(item.amountCents), version };
+  });
+  const removed = candidate.removed.map((raw) => {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Invalid removed Styling option.");
+    const item = raw as Record<string, unknown>;
+    if (Object.keys(item).some((key) => !["key", "version"].includes(key))) throw new Error("Unknown removal fields are not allowed.");
+    if (typeof item.key !== "string" || !/^styling-[a-z0-9-]{3,72}$/.test(item.key)) throw new Error("Invalid Styling key.");
+    if (!Number.isSafeInteger(item.version) || Number(item.version) < 1) throw new Error("Invalid Styling version.");
+    return { key: item.key, version: Number(item.version) };
+  });
+  const keys = [...items.flatMap((item) => item.key ? [item.key] : []), ...removed.map((item) => item.key)];
+  if (new Set(keys).size !== keys.length) throw new Error("A Styling option was submitted more than once.");
+  if (!items.length) throw new Error("Keep at least one Styling option active.");
+  return { items, removed };
 }
 
 function sameAllowedOrigin(request: Request): boolean {
@@ -113,7 +155,7 @@ async function accessIdentity(request: Request, env: RuntimeEnv): Promise<Access
 }
 
 export async function updatePrice(database: D1Database, update: PriceUpdate, email: string): Promise<PriceRow | null> {
-  const existing = await database.prepare("SELECT price_key, category, label, amount_cents, display_type, sort_order, version, updated_at, updated_by FROM service_prices WHERE price_key = ?")
+  const existing = await database.prepare(`SELECT ${PRICE_COLUMNS} FROM service_prices WHERE price_key = ? AND is_active = 1`)
     .bind(update.key).first<PriceRow>();
   if (!existing || existing.version !== update.version) return null;
   const changedAt = new Date().toISOString();
@@ -125,8 +167,69 @@ export async function updatePrice(database: D1Database, update: PriceUpdate, ema
       .bind(existing.amount_cents, update.amountCents, changedAt, email, update.key, newVersion, changedAt, email),
   ]);
   if (Number(results[0]?.meta?.changes || 0) !== 1) return null;
-  return database.prepare("SELECT price_key, category, label, amount_cents, display_type, sort_order, version, updated_at, updated_by FROM service_prices WHERE price_key = ?")
+  return database.prepare(`SELECT ${PRICE_COLUMNS} FROM service_prices WHERE price_key = ? AND is_active = 1`)
     .bind(update.key).first<PriceRow>();
+}
+
+async function updateStyling(database: D1Database, input: StylingBatchInput, email: string): Promise<PriceRow[] | null> {
+  const currentResult = await database.prepare(`SELECT ${PRICE_COLUMNS} FROM service_prices WHERE category = 'Styling' AND is_active = 1 ORDER BY sort_order`).all<PriceRow>();
+  const current = currentResult.results;
+  const byKey = new Map(current.map((row) => [row.price_key, row]));
+  const submittedKeys = new Set([...input.items.flatMap((item) => item.key ? [item.key] : []), ...input.removed.map((item) => item.key)]);
+  if (submittedKeys.size !== current.length || current.some((row) => !submittedKeys.has(row.price_key))) return null;
+  for (const item of [...input.items, ...input.removed]) {
+    if (!("key" in item) || !item.key) continue;
+    const row = byKey.get(item.key);
+    if (!row || row.version !== item.version) return null;
+  }
+
+  const changedAt = new Date().toISOString();
+  const statements: D1PreparedStatement[] = [];
+  const requiredChangeIndexes: number[] = [];
+  input.items.forEach((item, index) => {
+    const sortOrder = 150 + index * 10;
+    if (item.key === null) {
+      const key = `styling-${crypto.randomUUID()}`;
+      statements.push(
+        database.prepare("INSERT INTO service_prices (price_key, category, label, amount_cents, display_type, sort_order, version, updated_at, updated_by, is_active, created_at, description) VALUES (?, 'Styling', ?, ?, 'fixed', ?, 1, ?, ?, 1, ?, NULL)")
+          .bind(key, item.label, item.amountCents, sortOrder, changedAt, email, changedAt),
+        database.prepare("INSERT INTO styling_audit (price_key, action, new_label, new_amount_cents, new_sort_order, new_is_active, changed_at, changed_by) VALUES (?, 'create', ?, ?, ?, 1, ?, ?)")
+          .bind(key, item.label, item.amountCents, sortOrder, changedAt, email),
+      );
+      return;
+    }
+    const old = byKey.get(item.key)!;
+    const changed = old.label !== item.label || old.amount_cents !== item.amountCents || old.sort_order !== sortOrder;
+    if (!changed) return;
+    const action = old.label !== item.label || old.amount_cents !== item.amountCents ? "update" : "reorder";
+    requiredChangeIndexes.push(statements.length);
+    statements.push(
+      database.prepare("UPDATE service_prices SET label = ?, amount_cents = ?, sort_order = ?, version = version + 1, updated_at = ?, updated_by = ? WHERE price_key = ? AND category = 'Styling' AND is_active = 1 AND version = ?")
+        .bind(item.label, item.amountCents, sortOrder, changedAt, email, item.key, item.version),
+      database.prepare("INSERT INTO styling_audit (price_key, action, old_label, new_label, old_amount_cents, new_amount_cents, old_sort_order, new_sort_order, old_is_active, new_is_active, changed_at, changed_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 1, ?, ?)")
+        .bind(item.key, action, old.label, item.label, old.amount_cents, item.amountCents, old.sort_order, sortOrder, changedAt, email),
+    );
+    if (old.amount_cents !== item.amountCents) {
+      statements.push(database.prepare("INSERT INTO price_audit (price_key, old_amount_cents, new_amount_cents, changed_at, changed_by) VALUES (?, ?, ?, ?, ?)")
+        .bind(item.key, old.amount_cents, item.amountCents, changedAt, email));
+    }
+  });
+  input.removed.forEach((item) => {
+    const old = byKey.get(item.key)!;
+    requiredChangeIndexes.push(statements.length);
+    statements.push(
+      database.prepare("UPDATE service_prices SET is_active = 0, version = version + 1, updated_at = ?, updated_by = ? WHERE price_key = ? AND category = 'Styling' AND is_active = 1 AND version = ?")
+        .bind(changedAt, email, item.key, item.version),
+      database.prepare("INSERT INTO styling_audit (price_key, action, old_label, old_amount_cents, old_sort_order, old_is_active, new_is_active, changed_at, changed_by) VALUES (?, 'remove', ?, ?, ?, 1, 0, ?, ?)")
+        .bind(item.key, old.label, old.amount_cents, old.sort_order, changedAt, email),
+    );
+  });
+  if (statements.length) {
+    const results = await database.batch(statements);
+    if (requiredChangeIndexes.some((index) => Number(results[index]?.meta?.changes || 0) !== 1)) return null;
+  }
+  const refreshed = await database.prepare(`SELECT ${PRICE_COLUMNS} FROM service_prices WHERE category = 'Styling' AND is_active = 1 ORDER BY sort_order`).all<PriceRow>();
+  return refreshed.results;
 }
 
 async function adminPrices(request: Request, env: RuntimeEnv): Promise<Response> {
@@ -146,11 +249,40 @@ async function adminPrices(request: Request, env: RuntimeEnv): Promise<Response>
   }
 }
 
+async function adminStyling(request: Request, env: RuntimeEnv): Promise<Response> {
+  const identity = await accessIdentity(request, env);
+  if (identity instanceof Response) return identity;
+  if (request.method !== "PUT") return json({ error: "Method not allowed." }, 405, { Allow: "PUT" });
+  if (!sameAllowedOrigin(request)) return json({ error: "Invalid request origin." }, 403);
+  try {
+    const input = validateStylingBatch(await readJson(request));
+    const updated = await updateStyling(env.ADMIN_DB, input, identity.email);
+    if (!updated) return json({ error: "Styling options changed in another session. Refresh and try again." }, 409);
+    return json({ ok: true, prices: updated.map(presentPrice) });
+  } catch (error) {
+    if (error instanceof SyntaxError) return json({ error: "Malformed JSON." }, 400);
+    return json({ error: error instanceof Error ? error.message : "Invalid Styling update." }, 400);
+  }
+}
+
 function rewriteStructuredData(source: string, service: string, prices: Map<string, PriceRow>): string {
   try {
     const data = JSON.parse(source) as { "@graph"?: Array<Record<string, unknown>> };
     const serviceNode = data["@graph"]?.find((item) => item["@type"] === "Service");
     if (!serviceNode) return source;
+    if (service === "styling") {
+      serviceNode.offers = [...prices.values()]
+        .filter((row) => row.category === "Styling" && row.is_active === 1)
+        .sort((a, b) => a.sort_order - b.sort_order)
+        .map((row) => ({
+          "@type": "Offer",
+          name: row.label,
+          priceCurrency: "NZD",
+          ...(row.amount_cents === null ? {} : { price: Number.isInteger(row.amount_cents / 100) ? String(row.amount_cents / 100) : (row.amount_cents / 100).toFixed(2) }),
+          description: formatPrice(row.amount_cents, row.display_type),
+        }));
+      return JSON.stringify(data).replaceAll("<", "\\u003c");
+    }
     const offers = Array.isArray(serviceNode.offers) ? serviceNode.offers as Array<Record<string, unknown>> : [];
     offers.forEach((offer, index) => {
       const key = priceKeyFor(service, index);
@@ -166,11 +298,39 @@ function rewriteStructuredData(source: string, service: string, prices: Map<stri
   }
 }
 
+const escapePublicHtml = (value: string) => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+
+function renderStylingOptions(rows: PriceRow[], variant: string): string {
+  return rows
+    .filter((row) => row.category === "Styling" && row.is_active === 1)
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map((row) => {
+      const label = escapePublicHtml(row.label);
+      const price = escapePublicHtml(formatPrice(row.amount_cents, row.display_type));
+      const description = row.description ? `<small${variant === "services" ? ' class="all-prices__detail"' : ""}>${escapePublicHtml(row.description)}</small>` : "";
+      if (variant === "services") return `<div><span>${label}</span><strong>${price}</strong>${description}</div>`;
+      return `<div class="price-row price-row--detail"><span>${label}</span><strong>${price}</strong>${description}</div>`;
+    })
+    .join("");
+}
+
 function priceRewriter(rows: PriceRow[]): HTMLRewriter {
   const prices = new Map(rows.map((row) => [row.price_key, row]));
   let schemaSource = "";
   let schemaService = "";
   return new HTMLRewriter()
+    .on("[data-styling-options]", {
+      element(element) {
+        const styling = rows.filter((row) => row.category === "Styling" && row.is_active === 1);
+        if (styling.length) element.setInnerContent(renderStylingOptions(styling, element.getAttribute("data-styling-options") || "detail"), { html: true });
+      },
+    })
+    .on("[data-styling-starting-price]", {
+      element(element) {
+        const amounts = rows.filter((row) => row.category === "Styling" && row.is_active === 1 && row.display_type === "fixed" && row.amount_cents !== null).map((row) => row.amount_cents as number);
+        if (amounts.length) element.setInnerContent(`from ${formatPrice(Math.min(...amounts), "fixed")}`);
+      },
+    })
     .on("[data-price-key]", {
       element(element) {
         const row = prices.get(element.getAttribute("data-price-key") || "");
@@ -224,6 +384,7 @@ export function createWorker() {
           return json({ prices: (await loadPrices(env.ADMIN_DB)).map((row) => ({ key: row.price_key, formatted: formatPrice(row.amount_cents, row.display_type) })) });
         }
         if (url.pathname === "/api/admin/prices") return await adminPrices(request, env);
+        if (url.pathname === "/api/admin/styling") return await adminStyling(request, env);
         if (url.pathname === "/admin" || url.pathname.startsWith("/admin/")) return await serveAdmin(request, env);
         return await servePublic(request, env);
       } catch (error) {

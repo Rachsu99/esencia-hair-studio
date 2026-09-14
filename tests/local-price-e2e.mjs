@@ -115,6 +115,49 @@ try {
     const html = await (await fetch(`${workerOrigin}${pathname}`)).text();
     assert.match(html, /data-price-key="keratin-short">from \$180/i, `${pathname} should be restored to the source price`);
   }
+
+  const refreshedPrices = (await (await adminRequest("/api/admin/prices")).json()).prices;
+  const originalStyling = refreshedPrices.filter((price) => price.category === "Styling");
+  assert.equal(originalStyling.length, 3);
+  const putStyling = (items, removed = []) => adminRequest("/api/admin/styling", {
+    method: "PUT",
+    headers: { Origin: workerOrigin, "Content-Type": "application/json" },
+    body: JSON.stringify({ items: items.map(({ key, label, amountCents, version }) => ({ key, label, amountCents, version })), removed }),
+  });
+  const addedResponse = await putStyling([...originalStyling, { key: null, label: "Event Styling", amountCents: 7500, version: null }]);
+  assert.equal(addedResponse.status, 200);
+  const withAdded = (await addedResponse.json()).prices;
+  const added = withAdded.find((price) => price.label === "Event Styling");
+  assert.ok(added?.key.startsWith("styling-"));
+  for (const pathname of ["/services", "/styling"]) {
+    const html = await (await fetch(`${workerOrigin}${pathname}`)).text();
+    assert.match(html, /Event Styling/);
+    assert.match(html, /\$75/);
+  }
+
+  const renamedResponse = await putStyling([
+    { ...added, label: "Event Finish", amountCents: 7600 },
+    ...withAdded.filter((price) => price.key !== added.key),
+  ]);
+  assert.equal(renamedResponse.status, 200);
+  const renamedList = (await renamedResponse.json()).prices;
+  const renamed = renamedList.find((price) => price.key === added.key);
+  assert.equal(renamed.label, "Event Finish");
+  assert.equal(renamed.amountCents, 7600);
+
+  const staleResponseForStyling = await putStyling([
+    { ...renamed, version: added.version },
+    ...renamedList.filter((price) => price.key !== renamed.key),
+  ]);
+  assert.equal(staleResponseForStyling.status, 409);
+
+  const removeResponse = await putStyling(renamedList.filter((price) => price.key !== renamed.key), [{ key: renamed.key, version: renamed.version }]);
+  assert.equal(removeResponse.status, 200);
+  const restoredStyling = (await removeResponse.json()).prices;
+  assert.equal(restoredStyling.length, 3);
+  assert.deepEqual(restoredStyling.map(({ key, label, amountCents }) => ({ key, label, amountCents })).sort((a, b) => a.key.localeCompare(b.key)), originalStyling.map(({ key, label, amountCents }) => ({ key, label, amountCents })).sort((a, b) => a.key.localeCompare(b.key)));
+  const restoredStylingHtml = await (await fetch(`${workerOrigin}/styling`)).text();
+  assert.doesNotMatch(restoredStylingHtml, /Event Styling|Event Finish/);
   process.stdout.write("Local D1 price edit, linked-page update, conflict protection, and restoration: PASS\n");
 } finally {
   worker.kill();
